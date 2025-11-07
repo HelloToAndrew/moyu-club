@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "Mōyu Club",
+  "version": "0.1",
+  "description": "偷懶的五分鐘，遇見剛好也不想工作的靈魂。",
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
