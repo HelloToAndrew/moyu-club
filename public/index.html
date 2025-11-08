@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>🐠 Mōyu Club 測試聊天室</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+      body {
+        font-family: "Microsoft JhengHei", sans-serif;
+        background: linear-gradient(to bottom, #f5f7fa, #e2ebf0);
+        padding: 2em;
+        text-align: center;
+      }
+
+      h2 {
+        color: #2c3e50;
+      }
+
+      #status {
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        display: inline-block;
+        margin-bottom: 1em;
+      }
+
+      #chat {
+        width: 90%;
+        max-width: 500px;
+        height: 250px;
+        margin: 0 auto;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 10px;
+        overflow-y: auto;
+        background: #fff;
+        text-align: left;
+      }
+
+      input {
+        padding: 8px;
+        width: 70%;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        margin-top: 1em;
+      }
+
+      button {
+        padding: 8px 15px;
+        border: none;
+        background: #3a8ef6;
+        color: #fff;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #3279d3;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>🐟 歡迎來到 Mōyu Club</h2>
+    <p id="status">連線中...</p>
+
+    <div id="chat"></div>
+
+    <div>
+      <input id="msg" placeholder="輸入訊息..." />
+      <button onclick="sendMsg()">送出</button>
+    </div>
+
+    <script>
+      // 與伺服器建立連線
+      const socket = io();
+
+      // 初次連線成功
+      socket.on("connect", () => {
+        console.log("✅ 已連線，Socket ID:", socket.id);
+        document.getElementById("status").innerText = "已連線，等待配對中...";
+      });
+
+      // 狀態更新（伺服器端的提示，例如等待中）
+      socket.on("status", (text) => {
+        console.log("📡 狀態事件：", text);
+        document.getElementById("status").innerText = text;
+      });
+
+      // 配對成功事件
+      socket.on("match", (text) => {
+        console.log("🧩 收到 match 事件：", text);
+        document.getElementById("status").innerText = text;
+        appendSystemMessage("💬 你可以開始聊天囉！");
+      });
+
+      // 接收聊天訊息
+      socket.on("chat", (msg) => {
+        appendMessage(msg);
+      });
+
+      // 離線事件
+      socket.on("disconnect", () => {
+        console.log("🔴 離線");
+        appendSystemMessage("⚠️ 伺服器中斷，請重新整理。");
+      });
+
+      // 送出聊天訊息
+      function sendMsg() {
+        const msg = document.getElementById("msg").value.trim();
+        if (!msg) return;
+        socket.emit("chat", msg);
+        document.getElementById("msg").value = "";
+      }
+
+      // 顯示訊息
+      function appendMessage(msg) {
+        const div = document.createElement("div");
+        div.textContent = msg;
+        document.getElementById("chat").appendChild(div);
+      }
+
+      // 顯示系統訊息（灰字）
+      function appendSystemMessage(msg) {
+        const div = document.createElement("div");
+        div.style.color = "#888";
+        div.textContent = msg;
+        document.getElementById("chat").appendChild(div);
+      }
+    </script>
+  </body>
+</html>
