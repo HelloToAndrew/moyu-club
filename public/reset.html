@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <title>重設密碼 | Mōyu Club</title>
+  </head>
+  <body>
+    <h2>🔑 重設密碼</h2>
+    <input id="email" type="email" placeholder="請輸入 Email" />
+    <button id="reset">寄送重設信件</button>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+      import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
+        authDomain: "moyu-club.firebaseapp.com",
+        projectId: "moyu-club",
+        storageBucket: "moyu-club.firebasestorage.app",
+        messagingSenderId: "178708686787",
+        appId: "1:178708686787:web:be7c38dfe3d29a6695bf76"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      document.getElementById("reset").onclick = async () => {
+        const email = document.getElementById("email").value;
+        if (!email) return alert("請輸入 Email");
+        try {
+          await sendPasswordResetEmail(auth, email);
+          alert("已寄出重設密碼信件！");
+        } catch (e) {
+          alert("錯誤：" + e.message);
+        }
+      };
+    </script>
+  </body>
+</html>

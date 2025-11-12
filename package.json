@@ -1,28 +1,54 @@
 {
 
-  "type": "module",
-  "name": "moyu-club",
-  "version": "1.0.0",
-  "description": "",
-  "main": "popup.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.mjs"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HelloToAndrew/moyu-club.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/HelloToAndrew/moyu-club/issues"
+
+  "name": "moyu-club",
+
+  "version": "1.0.0",
+
+  "description": "",
+
+  "main": "popup.js",
+
+  "scripts": {
+
+    "test": "echo \"Error: no test specified\" && exit 1",
+
+    "start": "nodemon server.mjs"
+
   },
+
+  "repository": {
+
+    "type": "git",
+
+    "url": "git+https://github.com/HelloToAndrew/moyu-club.git"
+
+  },
+
+  "keywords": [],
+
+  "author": "",
+
+  "license": "ISC",
+
+  "bugs": {
+
+    "url": "https://github.com/HelloToAndrew/moyu-club/issues"
+
+  },
+
   "homepage": "https://github.com/HelloToAndrew/moyu-club#readme",
+
   "dependencies": {
+
     "express": "^5.1.0",
+
+    "firebase": "^12.5.0",
+
     "socket.io": "^4.8.1"
+
   }
+
 }
+

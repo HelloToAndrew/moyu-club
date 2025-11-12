@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mōyu Club 登入</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      background: linear-gradient(180deg, #d6f0ff, #a0d8ef);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    #login-box {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 80%;
+      margin: 5px;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+    }
+    button {
+      background-color: #00a0e9;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background-color: #007bbd; }
+  </style>
+</head>
+
+<body>
+  <div id="login-box">
+    <h2>🐟 歡迎回來 Mōyu Club</h2>
+    <input id="email" placeholder="Email" type="email" /><br/>
+    <input id="password" placeholder="密碼" type="password" /><br/>
+    <button id="login-btn">登入</button>
+    <p>或使用 Google 登入</p>
+    <button id="google-btn">使用 Gmail 登入</button>
+    <p><a href="reset.html">忘記密碼？</a></p>
+  </div>
+
+  <script type="module">
+    import { loginWithEmail, loginWithGoogle } from "../utils/firebaseAuth.mjs";
+
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      await loginWithEmail(email, password);
+    });
+
+    document.getElementById("google-btn").addEventListener("click", async () => {
+      await loginWithGoogle();
+    });
+  </script>
+</body>
+</html>
