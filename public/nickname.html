@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>設定暱稱 | Mōyu Club</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f0f7f8;
+      color: #333;
+    }
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 220px;
+      text-align: center;
+    }
+    button {
+      margin-top: 12px;
+      padding: 10px 18px;
+      background-color: #4f9d9d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>🐠 歡迎加入 Mōyu Club！</h2>
+  <p>請幫自己取一個暱稱</p>
+  <input id="nicknameInput" type="text" placeholder="輸入暱稱..." />
+  <button id="saveBtn">確認暱稱</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { firebaseConfig } from "./utils/firebaseConfig.mjs";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const nicknameInput = document.getElementById("nicknameInput");
+    const saveBtn = document.getElementById("saveBtn");
+
+    let currentUID = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "/login.html";
+      } else {
+        currentUID = user.uid;
+
+        const params = new URLSearchParams(window.location.search);
+        const isEditMode = params.get("edit") === "true";
+
+        const docRef = doc(db, "users", currentUID);
+        const snap = await getDoc(docRef);
+
+        if (snap.exists() && snap.data().nickname && !isEditMode) {
+          window.location.href = "/index.html";
+          return;
+        }
+
+        if (isEditMode && snap.exists()) {
+          nicknameInput.value = snap.data().nickname;
+        }
+      }
+    });
+
+    saveBtn.addEventListener("click", async () => {
+      const nickname = nicknameInput.value.trim();
+      if (!nickname) {
+        alert("暱稱不可為空！");
+        return;
+      }
+
+      try {
+        await setDoc(
+          doc(db, "users", currentUID),
+          {
+            nickname: nickname,
+            email: auth.currentUser.email || "",
+            createdAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+        alert("暱稱已設定！");
+        window.location.href = "/index.html";
+      } catch (error) {
+        console.error("設定暱稱錯誤：", error);
+        alert("發生錯誤，請再試一次");
+      }
+    });
+  </script>
+</body>
+</html>

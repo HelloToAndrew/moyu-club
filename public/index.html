@@ -3,207 +3,155 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mōyu Club 🐠</title>
+  <title>Mōyu Club｜主畫面</title>
   <style>
     body {
       font-family: "Noto Sans TC", sans-serif;
-      background: linear-gradient(180deg, #d6f0ff, #a0d8ef);
+      background-color: #eef7f7;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+      justify-content: start;
+      min-height: 100vh;
+      padding-top: 40px;
+      color: #333;
     }
-    #nickname-section, #chat-section {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      padding: 20px;
-      width: 90%;
-      max-width: 480px;
+    #userInfo {
+      margin-bottom: 20px;
       text-align: center;
     }
-    input, button {
-      padding: 10px;
-      font-size: 1rem;
-      border-radius: 10px;
-      border: none;
-      margin: 5px;
-    }
-    button {
-      background-color: #00a0e9;
+    #editNicknameBtn {
+      margin-left: 10px;
+      background-color: #4f9d9d;
       color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
       cursor: pointer;
     }
-    button:hover { background-color: #007bbd; }
-    #chat-box {
-      height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      padding: 10px;
+    #logoutBtn {
+      margin-top: 10px;
+      background-color: #e57373;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    #chat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 30px;
+      width: 80%;
+      max-width: 400px;
+    }
+    #messages {
+      border: 1px solid #ccc;
       border-radius: 10px;
-      text-align: left;
+      background: white;
+      padding: 10px;
+      width: 100%;
+      height: 200px;
+      overflow-y: auto;
       margin-bottom: 10px;
     }
-    .system-msg {
-      color: #555;
-      font-style: italic;
-      text-align: center;
-      margin: 8px 0;
+    #input {
+      width: 80%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
     }
-    .keep-buttons button {
-      background-color: #ffb6b9;
-      margin: 5px;
-    }
-    .keep-buttons button:first-child {
-      background-color: #a3d977;
+    #send {
+      margin-top: 8px;
+      background-color: #4f9d9d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
-
 <body>
-  <!-- 暱稱設定頁 -->
-  <div id="nickname-section">
-    <h2>🐟 歡迎來到 Mōyu Club</h2>
-    <p>請輸入你的暱稱或直接開始摸魚</p>
-    <input id="nickname-input" placeholder="輸入暱稱..." />
-    <br />
-    <button id="start-btn">開始摸魚</button>
+  <div id="userInfo">
+    <span id="nicknameDisplay">🐠 暱稱載入中...</span>
+    <button id="editNicknameBtn">修改暱稱</button>
+    <div><button id="logoutBtn">登出</button></div>
   </div>
 
-  <!-- 聊天主畫面 -->
-  <div id="chat-section" style="display:none;">
-    <h2 id="status">🎣 配對中...</h2>
-    <div id="timer">⏳ 3 秒</div>
-    <div id="chat-box"></div>
-    <input id="msg-input" placeholder="輸入訊息..." />
-    <button id="send-btn">送出</button>
+  <h2>🎣 Mōyu Club 聊天室</h2>
+  <div id="status">等待配對中...</div>
+
+  <div id="chat">
+    <div id="messages"></div>
+    <input id="input" placeholder="輸入訊息..." />
+    <button id="send">送出</button>
   </div>
 
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script>
-    const nicknameSection = document.getElementById("nickname-section");
-    const chatSection = document.getElementById("chat-section");
-    const chatBox = document.getElementById("chat-box");
-    const msgInput = document.getElementById("msg-input");
-    const sendBtn = document.getElementById("send-btn");
-    const timerDisplay = document.getElementById("timer");
-    const statusDisplay = document.getElementById("status");
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { firebaseConfig } from "./utils/firebaseConfig.mjs";
 
-    let socket, timer;
-    let countdown = 3;
-    let inMatch = false;
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    document.getElementById("start-btn").addEventListener("click", () => {
-      const nickname = document.getElementById("nickname-input").value || "匿名魚";
-      nicknameSection.style.display = "none";
-      chatSection.style.display = "block";
-      startSocket(nickname);
+    const nicknameDisplay = document.getElementById("nicknameDisplay");
+    const editNicknameBtn = document.getElementById("editNicknameBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    // 🧠 檢查登入狀態與暱稱
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "/login.html";
+        return;
+      }
+
+      const docRef = doc(db, "users", user.uid);
+      const snap = await getDoc(docRef);
+      if (snap.exists() && snap.data().nickname) {
+        nicknameDisplay.textContent = `🐠 ${snap.data().nickname}`;
+      } else {
+        window.location.href = "/nickname.html";
+      }
     });
 
-    function startSocket(nickname) {
-      socket = io({ query: { nickname } });
+    // ✏️ 修改暱稱
+    editNicknameBtn.addEventListener("click", () => {
+      window.location.href = "/nickname.html?edit=true";
+    });
 
-      socket.on("connect", () => {
-        statusDisplay.innerText = "🎣 正在尋找另一隻摸魚的魚...";
-      });
+    // 🚪 登出
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      alert("已登出！");
+      window.location.href = "/login.html";
+    });
 
-      socket.on("status", (msg) => {
-        statusDisplay.innerText = msg;
-      });
+    // ✉️ 聊天模擬區（之後你可整合 socket.io）
+    const sendBtn = document.getElementById("send");
+    const input = document.getElementById("input");
+    const messages = document.getElementById("messages");
 
-      socket.on("match", (msg) => {
-        inMatch = true;
-        chatBox.innerHTML += `<div class="system-msg">${msg}</div>`;
-        startCountdown();
-      });
-
-      socket.on("chat", (msg) => {
-        chatBox.innerHTML += `<div>${msg}</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
-      });
-
-      // 顯示對方想保留
-      socket.on("show-keep-option", () => {
-        showKeepOption();
-      });
-
-      // 雙方都按保留
-      socket.on("keep-success", () => {
-        clearInterval(timer);
-        chatBox.innerHTML += `<div class="system-msg">💫 你們得到了緣分！可自由聊天，時間無限制。</div>`;
-        timerDisplay.innerText = "💞 緣分模式";
-      });
-
-      // 對方或自己結束
-      socket.on("chat-end", () => {
-        chatBox.innerHTML += `<div class="system-msg">🐚 緣分未成，回到大海重新摸魚...</div>`;
-        endChatAndReset();
-      });
-    }
-
-    // 倒數計時
-    function startCountdown() {
-      clearInterval(timer);
-      countdown = 3;
-      timer = setInterval(() => {
-        countdown--;
-        timerDisplay.innerText = `⏳ ${countdown} 秒`;
-        if (countdown <= 0) {
-          clearInterval(timer);
-          showKeepOption();
-        }
-      }, 1000);
-    }
-
-    // 顯示保留選項
-    function showKeepOption() {
-      if (!inMatch) return;
-      chatBox.innerHTML += `
-        <div class="system-msg">時間到了，要保留這段對話嗎？</div>
-        <div class="keep-buttons">
-          <button id="keepYes">💾 保留對話</button>
-          <button id="keepNo">🚪 結束對話</button>
-        </div>
-      `;
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      document.getElementById("keepYes").onclick = () => {
-        socket.emit("keep-request");
-        document.querySelector(".keep-buttons").remove();
-        chatBox.innerHTML += `<div class="system-msg">📨 已發出保留請求，等待對方確認...</div>`;
-      };
-
-      document.getElementById("keepNo").onclick = () => {
-        socket.emit("end-chat");
-        endChatAndReset();
-      };
-    }
-
-    // 結束聊天並返回主畫面
-    function endChatAndReset() {
-      inMatch = false;
-      setTimeout(() => {
-        chatSection.style.display = "none";
-        nicknameSection.style.display = "block";
-        chatBox.innerHTML = "";
-        msgInput.value = "";
-        timerDisplay.innerText = "⏳";
-      }, 2000);
-    }
-
-    // 發送訊息
     sendBtn.addEventListener("click", sendMessage);
-    msgInput.addEventListener("keydown", (e) => {
+    input.addEventListener("keypress", (e) => {
       if (e.key === "Enter") sendMessage();
     });
 
     function sendMessage() {
-      const msg = msgInput.value.trim();
-      if (!msg) return;
-      socket.emit("chat", msg);
-      msgInput.value = "";
+      const text = input.value.trim();
+      if (!text) return;
+      const msgEl = document.createElement("div");
+      msgEl.textContent = `你說：${text}`;
+      messages.appendChild(msgEl);
+      input.value = "";
     }
   </script>
 </body>

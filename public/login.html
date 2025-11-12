@@ -3,65 +3,180 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mōyu Club 登入</title>
+  <title>Mōyu Club｜登入</title>
   <style>
     body {
       font-family: "Noto Sans TC", sans-serif;
-      background: linear-gradient(180deg, #d6f0ff, #a0d8ef);
+      background-color: #f0f7f8;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      margin: 0;
-    }
-    #login-box {
-      background: white;
-      border-radius: 20px;
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    input, button {
-      width: 80%;
-      margin: 5px;
-      padding: 10px;
-      border-radius: 10px;
-      border: none;
+      color: #333;
     }
     button {
-      background-color: #00a0e9;
-      color: white;
+      margin: 8px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
+      font-size: 16px;
     }
-    button:hover { background-color: #007bbd; }
+    #googleBtn {
+      background-color: #4285f4;
+      color: white;
+    }
+    #emailBtn {
+      background-color: #4f9d9d;
+      color: white;
+    }
+    input {
+      margin-top: 6px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
+      width: 220px;
+      text-align: center;
+    }
+    #emailLogin {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+    }
+    #forgot {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #555;
+      cursor: pointer;
+      text-decoration: underline;
+    }
   </style>
 </head>
-
 <body>
-  <div id="login-box">
-    <h2>🐟 歡迎回來 Mōyu Club</h2>
-    <input id="email" placeholder="Email" type="email" /><br/>
-    <input id="password" placeholder="密碼" type="password" /><br/>
-    <button id="login-btn">登入</button>
-    <p>或使用 Google 登入</p>
-    <button id="google-btn">使用 Gmail 登入</button>
-    <p><a href="reset.html">忘記密碼？</a></p>
+  <h2>🐠 歡迎回來 Mōyu Club</h2>
+  <p>選擇登入方式</p>
+
+  <button id="googleBtn">使用 Google 登入</button>
+  <button id="emailBtn">使用 Email 登入</button>
+
+  <div id="emailLogin">
+    <input id="emailInput" type="email" placeholder="Email" />
+    <input id="passwordInput" type="password" placeholder="密碼" />
+    <button id="loginBtn">登入</button>
+    <div id="forgot">忘記密碼？</div>
   </div>
 
   <script type="module">
-    import { loginWithEmail, loginWithGoogle } from "../utils/firebaseAuth.mjs";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signInWithEmailAndPassword,
+      sendPasswordResetEmail,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { firebaseConfig } from "./utils/firebaseConfig.mjs";
 
-    document.getElementById("login-btn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      await loginWithEmail(email, password);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const googleBtn = document.getElementById("googleBtn");
+    const emailBtn = document.getElementById("emailBtn");
+    const emailLogin = document.getElementById("emailLogin");
+    const loginBtn = document.getElementById("loginBtn");
+    const forgot = document.getElementById("forgot");
+
+    const emailInput = document.getElementById("emailInput");
+    const passwordInput = document.getElementById("passwordInput");
+
+    // 🧠 若已登入 → 直接導向
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const docRef = doc(db, "users", user.uid);
+        const snap = await getDoc(docRef);
+        if (snap.exists() && snap.data().nickname) {
+          window.location.href = "/index.html";
+        } else {
+          window.location.href = "/nickname.html";
+        }
+      }
     });
 
-    document.getElementById("google-btn").addEventListener("click", async () => {
-      await loginWithGoogle();
+    // 🔹 Google 登入
+    googleBtn.addEventListener("click", async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("Google 登入成功！", result.user.email);
+
+        const userRef = doc(db, "users", result.user.uid);
+        const snap = await getDoc(userRef);
+        if (snap.exists() && snap.data().nickname) {
+          window.location.href = "/index.html";
+        } else {
+          window.location.href = "/nickname.html";
+        }
+      } catch (error) {
+        console.error(error);
+        alert("登入失敗：" + error.message);
+      }
+    });
+
+    // 🔹 顯示 Email 登入介面
+    emailBtn.addEventListener("click", () => {
+      emailLogin.style.display = "flex";
+      emailBtn.style.display = "none";
+      googleBtn.style.display = "none";
+    });
+
+    // 🔹 Email 登入
+    loginBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (!email || !password) {
+        alert("請輸入 Email 和密碼");
+        return;
+      }
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        if (snap.exists() && snap.data().nickname) {
+          window.location.href = "/index.html";
+        } else {
+          window.location.href = "/nickname.html";
+        }
+      } catch (error) {
+        alert("登入錯誤：" + error.message);
+      }
+    });
+
+    // 🔹 忘記密碼
+    forgot.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      if (!email) {
+        alert("請輸入 Email 再重設密碼！");
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert("重設密碼連結已寄出，請檢查信箱！");
+      } catch (error) {
+        alert("錯誤：" + error.message);
+      }
     });
   </script>
 </body>
