@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Moyu Club - 註冊帳號</title>
+
+  <script type="module">
+
+    // Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      sendEmailVerification
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+    // Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
+      authDomain: "moyu-club.firebaseapp.com",
+      projectId: "moyu-club",
+      storageBucket: "moyu-club.firebasestorage.app",
+      messagingSenderId: "178708686787",
+      appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
+      measurementId: "G-GPV3CMCZ0T"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    // 🔹註冊流程
+    window.signup = async () => {
+      const email = document.getElementById("email").value;
+      const pw = document.getElementById("pw").value;
+      const pw2 = document.getElementById("pw2").value;
+
+      if (!email || !pw || !pw2) {
+        return alert("請填寫所有欄位");
+      }
+      if (pw !== pw2) {
+        return alert("兩次密碼不一致");
+      }
+      if (pw.length < 6) {
+        return alert("密碼至少需 6 字");
+      }
+
+      try {
+        // 建立帳號
+        const userCred = await createUserWithEmailAndPassword(auth, email, pw);
+        const user = userCred.user;
+
+        // 寫入 Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          email,
+          nickname: "",
+          createdAt: new Date().toISOString(),
+          verified: false
+        });
+
+        // 寄送驗證信
+        await sendEmailVerification(user);
+
+        alert("註冊成功！請到 Email 收信完成驗證");
+        window.location.href = "verify.html";
+
+      } catch (err) {
+        alert("註冊失敗：" + err.message);
+      }
+    };
+
+  </script>
+
+
+  <style>
+    body {
+      background: #f2f6ff;
+      font-family: Arial;
+      padding: 30px;
+    }
+    .card {
+      width: 380px;
+      margin: auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 14px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input {
+      width: 85%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 16px;
+      margin-top: 14px;
+      width: 90%;
+      background: #4a90e2;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #3578c8;
+    }
+    .small {
+      margin-top: 15px;
+      display: block;
+      color: #4a90e2;
+      cursor: pointer;
+    }
+  </style>
+
+</head>
+<body>
+
+  <div class="card">
+    <h2>註冊新帳號 🐟</h2>
+
+    <input id="email" placeholder="Email" />
+    <input id="pw" type="password" placeholder="密碼（至少 6 字）" />
+    <input id="pw2" type="password" placeholder="再次輸入密碼" />
+
+    <button onclick="signup()">建立帳號</button>
+
+    <span class="small" onclick="window.location.href='login.html'">返回登入</span>
+  </div>
+
+</body>
+</html>

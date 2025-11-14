@@ -15,7 +15,10 @@ const io = new Server(server);
 
 const PORT = 3000;
 
-// ✅ 這兩行是關鍵修正
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "login.html"));
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/utils", express.static(path.join(__dirname, "utils")));
 

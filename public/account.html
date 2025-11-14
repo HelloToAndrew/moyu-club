@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Moyu Club - 帳號設定</title>
+
+  <style>
+    body {
+      background: #f2f6ff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      width: 420px;
+      background: #ffffff;
+      padding: 24px 28px 28px;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      box-sizing: border-box;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 6px;
+      font-size: 22px;
+      text-align: center;
+    }
+    p.sub {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #666;
+      text-align: center;
+    }
+    label {
+      font-size: 13px;
+      color: #444;
+      display: block;
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
+    input {
+      width: 100%;
+      padding: 9px 11px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #d0d7e2;
+      box-sizing: border-box;
+    }
+    input:disabled {
+      background: #f4f6fb;
+      color: #666;
+    }
+    input:focus {
+      outline: none;
+      border-color: #4a90e2;
+      box-shadow: 0 0 0 2px rgba(74,144,226,0.18);
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 10px 0;
+      margin-top: 16px;
+      border-radius: 10px;
+      border: none;
+      background: #4a90e2;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-primary:hover {
+      background: #3578c8;
+    }
+    .btn-secondary {
+      width: 100%;
+      padding: 9px 0;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 1px solid #d0d7e2;
+      background: #ffffff;
+      color: #36528f;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-secondary:hover {
+      background: #f4f6fb;
+    }
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+    .link {
+      color: #4a90e2;
+      cursor: pointer;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #777;
+      min-height: 16px;
+      text-align: center;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      sendPasswordResetEmail,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
+      authDomain: "moyu-club.firebaseapp.com",
+      projectId: "moyu-club",
+      storageBucket: "moyu-club.firebasestorage.app",
+      messagingSenderId: "178708686787",
+      appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
+      measurementId: "G-GPV3CMCZ0T"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    const emailInput    = document.createElement("input"); // 先宣告避免 IDE 抱怨，實際會在 onload 抓 DOM
+    let   currentUser   = null;
+    let   userDocRef    = null;
+
+    function setStatus(msg) {
+      const el = document.getElementById("status");
+      if (el) el.textContent = msg || "";
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const emailEl    = document.getElementById("email");
+      const nicknameEl = document.getElementById("nickname");
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = "login.html";
+          return;
+        }
+        currentUser = user;
+        userDocRef  = doc(db, "users", user.uid);
+
+        // 顯示 email
+        emailEl.value = user.email || "";
+
+        try {
+          const snap = await getDoc(userDocRef);
+          const data = snap.exists() ? snap.data() : {};
+          nicknameEl.value = (data.nickname || "").toString();
+          setStatus("");
+        } catch (err) {
+          console.error("讀取使用者資料失敗：", err);
+          setStatus("讀取使用者資料失敗");
+        }
+      });
+
+      // 儲存暱稱
+      window.saveNickname = async () => {
+        if (!currentUser || !userDocRef) return;
+        const newName = nicknameEl.value.trim();
+        if (!newName) {
+          alert("暱稱不可為空白");
+          return;
+        }
+        try {
+          setStatus("儲存中…");
+          await setDoc(
+            userDocRef,
+            { nickname: newName },
+            { merge: true }
+          );
+          setStatus("暱稱已更新 ✅");
+          alert("暱稱已更新！");
+        } catch (err) {
+          console.error("更新暱稱失敗：", err);
+          setStatus("更新暱稱失敗");
+          alert("更新暱稱失敗：" + err.code);
+        }
+      };
+
+      // 寄送重設密碼信
+      window.sendReset = async () => {
+        if (!currentUser || !currentUser.email) {
+          alert("目前無法取得你的 Email，請重新登入再試一次。");
+          return;
+        }
+        try {
+          setStatus("寄送重設密碼信中…");
+          await sendPasswordResetEmail(auth, currentUser.email);
+          setStatus("已寄出重設密碼信，請到信箱收信。");
+          alert("重設密碼信已寄出！");
+        } catch (err) {
+          console.error("寄送重設密碼信失敗：", err);
+          setStatus("寄送重設密碼信失敗");
+          alert("寄送重設密碼信失敗：" + err.code);
+        }
+      };
+
+      window.backHome = () => {
+        window.location.href = "home.html";
+      };
+
+      window.logout = async () => {
+        try {
+          await signOut(auth);
+        } catch (err) {
+          console.error("登出失敗：", err);
+        } finally {
+          window.location.href = "login.html";
+        }
+      };
+    });
+  </script>
+</head>
+
+<body>
+  <div class="card">
+    <h2>帳號設定</h2>
+    <p class="sub">管理你的信箱與暱稱，準備下一次的摸魚配對。</p>
+
+    <label for="email">登入 Email（不可修改）</label>
+    <input id="email" type="email" disabled />
+
+    <label for="nickname">暱稱</label>
+    <input id="nickname" type="text" placeholder="例：泡泡魚、摸魚狐狸…" />
+
+    <button class="btn-primary" onclick="saveNickname()">儲存暱稱</button>
+
+    <button class="btn-secondary" onclick="sendReset()">
+      寄送重設密碼信
+    </button>
+
+    <div class="footer-row">
+      <span class="link" onclick="backHome()">返回主畫面</span>
+      <span class="link" onclick="logout()">登出</span>
+    </div>
+
+    <div id="status"></div>
+  </div>
+</body>
+</html>

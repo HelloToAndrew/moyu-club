@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mōyu Club - 帳戶設定</title>
+
+  <style>
+    body {
+      background: #f3f6ff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
+      padding: 30px;
+    }
+    .card {
+      width: 420px;
+      margin: auto;
+      background: #fff;
+      padding: 24px 26px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      color: #777;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+    .field-label {
+      font-size: 13px;
+      color: #666;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+    .field-box {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: #fff;
+    }
+    .badge.ok {
+      background: #27ae60;
+    }
+    .badge.warn {
+      background: #f39c12;
+    }
+    input {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .btn-row {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    button {
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #4a90e2;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #3578c8;
+    }
+    .btn-secondary {
+      background: #eef2ff;
+      color: #445;
+    }
+    .btn-secondary:hover {
+      background: #dde4ff;
+    }
+    .btn-danger {
+      background: #e74c3c;
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+    .section-title {
+      margin-top: 20px;
+      font-weight: 600;
+      font-size: 14px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+    #msg {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #555;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>帳戶設定 ⚙️</h2>
+    <div class="subtitle">管理你的登入信箱、暱稱與之後的擴充功能。</div>
+
+    <!-- 電子郵件資訊 -->
+    <div class="section-title">登入信箱</div>
+    <div class="field-label">Email</div>
+    <div class="field-box">
+      <span id="email-text">載入中...</span>
+      <span id="email-status" class="badge warn">檢查中</span>
+    </div>
+    <div class="btn-row" style="justify-content:flex-start; margin-top:8px;">
+      <button class="btn-secondary" id="btn-resend" style="display:none;" onclick="resendVerify()">
+        重新寄送驗證信
+      </button>
+    </div>
+
+    <!-- 暱稱設定 -->
+    <div class="section-title">暱稱設定</div>
+    <div class="field-label">顯示暱稱（聊天時顯示的名字）</div>
+    <input id="nickname-input" placeholder="輸入你的暱稱" />
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goHome()">回主畫面</button>
+      <button class="btn-primary" onclick="saveNickname()">儲存暱稱</button>
+    </div>
+
+    <!-- 之後擴充用區塊 -->
+    <div class="section-title">其他設定（預留）</div>
+    <div style="font-size:13px; color:#888;">
+      未來可以在這裡加入：更改密碼、通知設定、付費方案、黑名單管理⋯
+    </div>
+
+    <div class="btn-row" style="margin-top:18px; justify-content:space-between;">
+      <button class="btn-danger" onclick="logout()">登出帳號</button>
+    </div>
+
+    <div id="msg"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      sendEmailVerification,
+      reload,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+    // 🔧 Firebase 設定（跟之前一樣）
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
+      authDomain: "moyu-club.firebaseapp.com",
+      projectId: "moyu-club",
+      storageBucket: "moyu-club.firebasestorage.app",
+      messagingSenderId: "178708686787",
+      appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
+      measurementId: "G-GPV3CMCZ0T"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    const emailTextEl = document.getElementById("email-text");
+    const emailStatusEl = document.getElementById("email-status");
+    const nicknameInput = document.getElementById("nickname-input");
+    const msgEl = document.getElementById("msg");
+    const resendBtn = document.getElementById("btn-resend");
+
+    function showMsg(text) {
+      msgEl.textContent = text || "";
+    }
+
+    // ⭐ 進入頁面先確認登入狀態
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("尚未登入，將返回登入頁面");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        await reload(user); // 確保 emailVerified 最新
+        emailTextEl.textContent = user.email || "(無)";
+
+        // Firestore 取資料
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+          // 若沒資料，先初始化一份
+          await setDoc(ref, {
+            email: user.email || "",
+            nickname: "",
+            verified: user.emailVerified || false,
+            createdAt: new Date().toISOString()
+          });
+        }
+
+        const data = (await getDoc(ref)).data();
+
+        // 更新暱稱欄位
+        nicknameInput.value = data.nickname || "";
+
+        // 同步 Firestore 的 verified
+        if (user.emailVerified && !data.verified) {
+          await updateDoc(ref, { verified: true });
+        }
+
+        // 顯示驗證狀態
+        const effectiveVerified = user.emailVerified || data.verified;
+        if (effectiveVerified) {
+          emailStatusEl.textContent = "已驗證";
+          emailStatusEl.classList.remove("warn");
+          emailStatusEl.classList.add("ok");
+          resendBtn.style.display = "none";
+        } else {
+          emailStatusEl.textContent = "尚未驗證";
+          emailStatusEl.classList.remove("ok");
+          emailStatusEl.classList.add("warn");
+          resendBtn.style.display = "inline-block";
+        }
+
+      } catch (err) {
+        console.error(err);
+        showMsg("載入帳戶資料時發生錯誤：" + err.message);
+      }
+    });
+
+    // 修改暱稱
+    window.saveNickname = async () => {
+      const nickname = nicknameInput.value.trim();
+      if (!nickname) {
+        alert("暱稱不可為空白");
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        alert("登入狀態已失效，請重新登入");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const ref = doc(db, "users", user.uid);
+        await setDoc(ref, { nickname }, { merge: true });
+        showMsg("暱稱已更新 ✅");
+      } catch (err) {
+        console.error(err);
+        alert("暱稱更新失敗：" + err.message);
+      }
+    };
+
+    // 重新寄送驗證信
+    window.resendVerify = async () => {
+      const user = auth.currentUser;
+      if (!user) return alert("登入已失效，請重新登入");
+
+      try {
+        await sendEmailVerification(user);
+        alert("已寄出驗證 Email，請到信箱收信");
+      } catch (err) {
+        console.error(err);
+        alert("寄送驗證信失敗：" + err.message);
+      }
+    };
+
+    // 回主畫面
+    window.goHome = () => {
+      window.location.href = "home.html";
+    };
+
+    // 登出
+    window.logout = async () => {
+      try {
+        await signOut(auth);
+        window.location.href = "login.html";
+      } catch (err) {
+        alert("登出失敗：" + err.message);
+      }
+    };
+  </script>
+
+</body>
+</html>

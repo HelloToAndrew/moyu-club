@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Moyu Club - 主畫面</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f2f6ff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .shell {
+      width: 900px;
+      max-width: 100%;
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+      padding: 20px 24px 18px;
+      box-sizing: border-box;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .logo-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .user-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f0f4ff;
+      color: #3755a3;
+      font-size: 12px;
+    }
+    .btn-link {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: #4a90e2;
+      font-size: 13px;
+      padding: 4px 8px;
+    }
+    .btn-link:disabled {
+      color: #aaa;
+      cursor: default;
+    }
+    .btn-link:hover:not(:disabled) {
+      text-decoration: underline;
+    }
+    .main {
+      display: grid;
+      grid-template-columns: 2fr 3fr;
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .panel {
+      background: #f8f9ff;
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-sizing: border-box;
+      height: 360px;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+    .status-text {
+      font-size: 14px;
+      color: #555;
+      min-height: 20px;
+      margin-bottom: 8px;
+    }
+    .big-number {
+      font-size: 26px;
+      font-weight: 600;
+      color: #4a90e2;
+      margin: 8px 0 4px;
+    }
+    .hint {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 12px;
+    }
+    .btn-main {
+      border: none;
+      border-radius: 10px;
+      background: #4a90e2;
+      color: #fff;
+      padding: 10px 0;
+      font-size: 15px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .btn-main[disabled] {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .btn-main:hover:not([disabled]) {
+      background: #3578c8;
+    }
+    .timer {
+      font-size: 14px;
+      color: #333;
+      margin-top: 4px;
+    }
+    .keep-row {
+      margin-top: auto;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      display: none; /* ✅ 一開始不顯示，時間到再顯示 */
+    }
+    .btn-secondary, .btn-danger {
+      border-radius: 8px;
+      border: none;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn-secondary {
+      background: #ffffff;
+      border: 1px solid #d0d7e2;
+      color: #36528f;
+    }
+    .btn-danger {
+      background: #ff6b6b;
+      color: #fff;
+    }
+    .btn-secondary[disabled],
+    .btn-danger[disabled] {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    /* 聊天區 */
+    .chat-log {
+      flex: 1;
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #e1e4f0;
+      padding: 10px;
+      font-size: 13px;
+      overflow-y: auto;
+      margin-bottom: 8px;
+      white-space: pre-wrap;
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+    }
+    .chat-input-row input {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 13px;
+      border-radius: 8px;
+      border: 1px solid #ccd2e1;
+      box-sizing: border-box;
+    }
+    .chat-input-row button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      background: #4a90e2;
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .chat-input-row button:hover:not([disabled]) {
+      background: #3578c8;
+    }
+    .chat-input-row button[disabled] {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .system-msg {
+      color: #888;
+    }
+    .me-msg {
+      color: #2f7d32;
+    }
+    .partner-msg {
+      color: #333;
+    }
+
+    /* 已保留緣分列表 */
+    .saved-section {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dashed #d0d7e2;
+    }
+    .saved-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .saved-header h3 {
+      font-size: 14px;
+      margin: 0;
+    }
+    .saved-list {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .saved-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9ff;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    .saved-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .saved-label {
+      font-weight: 500;
+    }
+    .saved-time {
+      font-size: 11px;
+      color: #777;
+    }
+    .saved-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .saved-actions button {
+      border-radius: 8px;
+      border: none;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn-chat-again {
+      background: #4a90e2;
+      color: #fff;
+    }
+    .btn-delete {
+      background: #ffffff;
+      border: 1px solid #d0d7e2;
+      color: #555;
+    }
+    .saved-hint {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+    <div class="top-bar">
+      <div class="logo-title">Moyu Club 🐟</div>
+      <div class="user-area">
+        <span id="nicknameBadge" class="badge">暱稱載入中…</span>
+        <button class="btn-link" id="btnAccount">帳號設定</button>
+        <button class="btn-link" id="btnLogout">登出</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <!-- 左側：配對與狀態 -->
+      <div class="panel">
+        <h3>今日摸魚狀態</h3>
+        <div class="status-text" id="statusText">尚未開始配對</div>
+        <div class="big-number" id="timerText">— : —</div>
+        <div class="hint">
+          按下「開始配對」後，可以繼續工作。配對成功會在這裡提醒你。
+        </div>
+
+        <button class="btn-main" id="btnMatch">開始配對</button>
+
+        <div class="timer" id="matchInfo">目前線上悠遊中的魚：--</div>
+
+        <div class="keep-row" id="keepRow">
+          <button class="btn-secondary" id="btnKeep" disabled>保留這段緣分</button>
+          <button class="btn-danger" id="btnEnd" disabled>結束對話</button>
+        </div>
+      </div>
+
+      <!-- 右側：聊天區 -->
+      <div class="panel">
+        <h3>對話窗</h3>
+        <div id="chatLog" class="chat-log">
+          <div class="system-msg">尚未配對，請先在左側按「開始配對」。</div>
+        </div>
+
+        <div class="chat-input-row">
+          <input id="chatInput" type="text" placeholder="按 Enter 送出訊息" disabled />
+          <button id="btnSend" disabled>送出</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 已保留緣分清單 -->
+    <div class="saved-section">
+      <div class="saved-header">
+        <h3>已保留的緣分</h3>
+        <span style="font-size: 11px; color:#999;">最多保留 3 組</span>
+      </div>
+      <div id="savedList" class="saved-list">
+        <!-- 動態生成 -->
+      </div>
+      <div class="saved-hint" id="savedHint">
+        還沒有保留的緣分。時間到時，如果雙方都按下「保留這段緣分」，就會出現在這裡。
+      </div>
+    </div>
+  </div>
+
+  <!-- socket.io 客戶端 -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Firebase + 主程式 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
+      authDomain: "moyu-club.firebaseapp.com",
+      projectId: "moyu-club",
+      storageBucket: "moyu-club.firebasestorage.app",
+      messagingSenderId: "178708686787",
+      appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
+      measurementId: "G-GPV3CMCZ0T"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // 🔧 DOM 元素
+    const nicknameBadge   = document.getElementById("nicknameBadge");
+    const statusText      = document.getElementById("statusText");
+    const timerText       = document.getElementById("timerText");
+    const matchInfo       = document.getElementById("matchInfo");
+    const btnMatch        = document.getElementById("btnMatch");
+    const btnKeep         = document.getElementById("btnKeep");
+    const btnEnd          = document.getElementById("btnEnd");
+    const keepRow         = document.getElementById("keepRow");
+    const chatLog         = document.getElementById("chatLog");
+    const chatInput       = document.getElementById("chatInput");
+    const btnSend         = document.getElementById("btnSend");
+    const btnAccount      = document.getElementById("btnAccount");
+    const btnLogout       = document.getElementById("btnLogout");
+    const savedList       = document.getElementById("savedList");
+    const savedHint       = document.getElementById("savedHint");
+
+    let currentUser = null;
+    let nickname    = "匿名魚";
+    let socket      = null;
+    let countdownId = null;
+    let timeLeft    = 5;      // ✅ 測試用 5 秒
+    let chatActive  = false;  // 是否正在聊天中
+    let savedMatches = [];    // 先存在前端，之後可以搬到 Firestore
+
+    function appendMsg(text, cssClass = "system-msg") {
+      const div = document.createElement("div");
+      div.className = cssClass;
+      div.textContent = text;
+      chatLog.appendChild(div);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function resetChatUI() {
+      statusText.textContent = "尚未開始配對";
+      timerText.textContent  = "— : —";
+      matchInfo.textContent  = "目前線上悠遊中的魚：--";
+      btnMatch.disabled = false;
+
+      // 保留 / 結束按鈕收起來
+      keepRow.style.display = "none";
+      btnKeep.disabled = true;
+      btnEnd.disabled  = true;
+
+      chatInput.disabled = true;
+      btnSend.disabled   = true;
+      chatInput.value    = "";
+      chatLog.innerHTML  = '<div class="system-msg">尚未配對，請先在左側按「開始配對」。</div>';
+
+      if (countdownId) {
+        clearInterval(countdownId);
+        countdownId = null;
+      }
+
+      chatActive = false;
+      btnAccount.disabled = false;  // ✅ 聊天結束後恢復可修改帳號設定
+    }
+
+    function startTimer() {
+      if (countdownId) {
+        clearInterval(countdownId);
+      }
+      timeLeft = 5; // ✅ 測試先用 5 秒
+      updateTimerText();
+      countdownId = setInterval(() => {
+        timeLeft -= 1;
+        if (timeLeft <= 0) {
+          clearInterval(countdownId);
+          countdownId = null;
+          timerText.textContent = "時間到 🎣";
+          statusText.textContent = "時間到，這段緣分要保留嗎？";
+
+          // ✅ 時間到 → 才顯示保留／結束區域
+          keepRow.style.display = "flex";
+          btnKeep.disabled = false;
+          btnEnd.disabled  = false;
+        } else {
+          updateTimerText();
+        }
+      }, 1000);
+    }
+
+    function updateTimerText() {
+      const m = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+      const s = String(timeLeft % 60).padStart(2, "0");
+      timerText.textContent = `${m}:${s}`;
+    }
+
+    function renderSavedMatches() {
+      savedList.innerHTML = "";
+      if (savedMatches.length === 0) {
+        savedHint.textContent = "還沒有保留的緣分。時間到時，如果雙方都按下「保留這段緣分」，就會出現在這裡。";
+        return;
+      }
+      savedHint.textContent = "";
+      savedMatches.forEach((m, idx) => {
+        const row = document.createElement("div");
+        row.className = "saved-item";
+
+        const meta = document.createElement("div");
+        meta.className = "saved-meta";
+
+        const label = document.createElement("div");
+        label.className = "saved-label";
+        label.textContent = m.label || `摸魚夥伴 #${idx + 1}`;
+
+        const time = document.createElement("div");
+        time.className = "saved-time";
+        time.textContent = "保留於 " + m.savedAt;
+
+        meta.appendChild(label);
+        meta.appendChild(time);
+
+        const actions = document.createElement("div");
+        actions.className = "saved-actions";
+
+        const btnChatAgain = document.createElement("button");
+        btnChatAgain.className = "btn-chat-again";
+        btnChatAgain.textContent = "再次聊天";
+        btnChatAgain.onclick = () => {
+          alert("之後會做成可直接連上指定房間，目前先保留紀錄即可。");
+        };
+
+        const btnDelete = document.createElement("button");
+        btnDelete.className = "btn-delete";
+        btnDelete.textContent = "刪除";
+        btnDelete.onclick = () => {
+          savedMatches.splice(idx, 1);
+          renderSavedMatches();
+        };
+
+        actions.appendChild(btnChatAgain);
+        actions.appendChild(btnDelete);
+
+        row.appendChild(meta);
+        row.appendChild(actions);
+        savedList.appendChild(row);
+      });
+    }
+
+    function addSavedMatch(roomId) {
+      if (savedMatches.length >= 3) {
+        alert("你已經保留了 3 組緣分，請先刪除其中一組再保留新的。");
+        return;
+      }
+      savedMatches.push({
+        roomId,
+        label: "摸魚夥伴",
+        savedAt: new Date().toLocaleString()
+      });
+      renderSavedMatches();
+    }
+
+    function initSocket() {
+      if (socket) return;
+
+      socket = io({
+        query: { nickname }
+      });
+
+      socket.on("connect", () => {
+        console.log("Socket 連線成功：", socket.id);
+        matchInfo.textContent = "已連線到摸魚池，等待你開始配對。";
+      });
+
+      socket.on("status", (text) => {
+        statusText.textContent = text;
+      });
+
+      socket.on("match", (text) => {
+        statusText.textContent = text;
+        appendMsg("系統：" + text, "system-msg");
+        btnMatch.disabled = true;
+
+        // 已配對 → 可立即開始聊天
+        chatInput.disabled = false;
+        btnSend.disabled   = false;
+
+        // 聊天中
+        chatActive = true;
+        btnAccount.disabled = true;  // ✅ 聊天中不可改帳號/暱稱
+
+        // 倒數開始
+        keepRow.style.display = "none";
+        btnKeep.disabled = true;
+        btnEnd.disabled  = false;
+        startTimer();
+      });
+
+      socket.on("chat", (msg) => {
+        appendMsg("對方：" + msg, "partner-msg");
+      });
+
+      // ✅ 雙方都按下「保留」後，伺服器廣播此事件
+      socket.on("keep-confirmed", ({ roomId }) => {
+        statusText.textContent = "這段緣分被你們一起保留下來，可以慢慢聊。";
+        appendMsg("系統：雙方都選擇保留，這段緣分被記錄下來。", "system-msg");
+        timerText.textContent = "∞";
+
+        // 不再需要保留按鈕，但可以隨時結束
+        btnKeep.disabled = true;
+        // 你可以選擇讓 btnEnd 保持可用，讓任何一方都能結束對話
+        btnEnd.disabled  = false;
+
+        // 註冊一筆保留紀錄
+        addSavedMatch(roomId);
+      });
+
+      socket.on("chat-end", () => {
+        appendMsg("系統：對方已離開，這段緣分先到這裡。", "system-msg");
+        resetChatUI();
+      });
+    }
+
+    // 🧠 Auth 監聽
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      currentUser = user;
+      try {
+        const ref  = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+        const data = snap.exists() ? snap.data() : {};
+
+        nickname = (data.nickname && data.nickname.trim()) || "匿名魚";
+        nicknameBadge.textContent = nickname;
+        initSocket();
+      } catch (err) {
+        console.error("載入使用者暱稱失敗：", err);
+        nicknameBadge.textContent = "暱稱載入失敗";
+        initSocket();
+      }
+    });
+
+    // 🔘 事件綁定
+
+    // 開始配對
+    btnMatch.addEventListener("click", () => {
+      if (!socket) {
+        alert("尚未連線到伺服器，請稍後再試。");
+        return;
+      }
+      btnMatch.disabled = true;
+      statusText.textContent = "配對中… 正在尋找另一隻魚";
+      appendMsg("系統：開始配對，等一下看看會游來哪一隻魚。", "system-msg");
+      // 目前配對由 server 自動完成
+    });
+    
+// 共用的送出訊息函式（按 Enter 或按送出按鈕 都會走同一條）
+function sendMessage() {
+  const text = chatInput.value.trim();
+  if (!text || !socket) return;
+
+  socket.emit("chat", text);
+  appendMsg("我：" + text, "me-msg");
+
+  // 🔥🔥🔥 永遠清空（不受配對前後影響）
+  chatInput.value = "";
+}
+
+// 按按鈕送出
+btnSend.addEventListener("click", sendMessage);
+
+// 按 Enter 送出
+chatInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();  // 不要觸發換行
+    sendMessage();
+  }
+});
+
+    // 保留緣分（倒數結束後才按得到）
+    btnKeep.addEventListener("click", () => {
+      if (!socket) return;
+      socket.emit("keep-request");
+      statusText.textContent = "已送出保留請求，等待對方回應…";
+      appendMsg("系統：你選擇保留這段緣分，等待對方的選擇。", "system-msg");
+      btnKeep.disabled = true;
+      // btnEnd 保留可按，讓你仍然可以結束對話
+    });
+
+    // 結束對話（任何時刻都可以按）
+    btnEnd.addEventListener("click", () => {
+      if (socket) {
+        socket.emit("end-chat");
+      }
+      appendMsg("系統：你結束了這段對話。", "system-msg");
+      resetChatUI();
+    });
+
+    // 帳號設定
+    btnAccount.addEventListener("click", () => {
+      if (chatActive) {
+        alert("目前正在聊天中，請先結束對話再修改帳號設定。");
+        return;
+      }
+      window.location.href = "account.html";
+    });
+
+    // 登出
+    btnLogout.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+      } catch (err) {
+        console.error("登出失敗：", err);
+      } finally {
+        window.location.href = "login.html";
+      }
+    });
+
+    // 一開始先 reset UI
+    resetChatUI();
+    renderSavedMatches();
+  </script>
+</body>
+</html>
