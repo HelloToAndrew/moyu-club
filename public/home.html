@@ -1,683 +1,805 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <title>Moyu Club - 主畫面</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mōyu Club - 主畫面</title>
 
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f2f6ff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    .shell {
-      width: 900px;
-      max-width: 100%;
-      background: #ffffff;
-      border-radius: 18px;
-      box-shadow: 0 14px 30px rgba(0,0,0,0.08);
-      padding: 20px 24px 18px;
-      box-sizing: border-box;
-    }
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .logo-title {
-      font-size: 20px;
-      font-weight: 600;
-    }
-    .user-area {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-    }
-    .badge {
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #f0f4ff;
-      color: #3755a3;
-      font-size: 12px;
-    }
-    .btn-link {
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      color: #4a90e2;
-      font-size: 13px;
-      padding: 4px 8px;
-    }
-    .btn-link:disabled {
-      color: #aaa;
-      cursor: default;
-    }
-    .btn-link:hover:not(:disabled) {
-      text-decoration: underline;
-    }
-    .main {
-      display: grid;
-      grid-template-columns: 2fr 3fr;
-      gap: 16px;
-      margin-top: 8px;
-    }
-    .panel {
-      background: #f8f9ff;
-      border-radius: 14px;
-      padding: 14px 16px;
-      box-sizing: border-box;
-      height: 360px;
-      display: flex;
-      flex-direction: column;
-    }
-    .panel h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
-    }
-    .status-text {
-      font-size: 14px;
-      color: #555;
-      min-height: 20px;
-      margin-bottom: 8px;
-    }
-    .big-number {
-      font-size: 26px;
-      font-weight: 600;
-      color: #4a90e2;
-      margin: 8px 0 4px;
-    }
-    .hint {
-      font-size: 12px;
-      color: #888;
-      margin-bottom: 12px;
-    }
-    .btn-main {
-      border: none;
-      border-radius: 10px;
-      background: #4a90e2;
-      color: #fff;
-      padding: 10px 0;
-      font-size: 15px;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-    .btn-main[disabled] {
-      opacity: 0.6;
-      cursor: default;
-    }
-    .btn-main:hover:not([disabled]) {
-      background: #3578c8;
-    }
-    .timer {
-      font-size: 14px;
-      color: #333;
-      margin-top: 4px;
-    }
-    .keep-row {
-      margin-top: auto;
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      display: none; /* ✅ 一開始不顯示，時間到再顯示 */
-    }
-    .btn-secondary, .btn-danger {
-      border-radius: 8px;
-      border: none;
-      padding: 6px 10px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .btn-secondary {
-      background: #ffffff;
-      border: 1px solid #d0d7e2;
-      color: #36528f;
-    }
-    .btn-danger {
-      background: #ff6b6b;
-      color: #fff;
-    }
-    .btn-secondary[disabled],
-    .btn-danger[disabled] {
-      opacity: 0.5;
-      cursor: default;
-    }
+    <!-- Tailwind CDN（開發用） -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    /* 聊天區 */
-    .chat-log {
-      flex: 1;
-      background: #ffffff;
-      border-radius: 10px;
-      border: 1px solid #e1e4f0;
-      padding: 10px;
-      font-size: 13px;
-      overflow-y: auto;
-      margin-bottom: 8px;
-      white-space: pre-wrap;
-    }
-    .chat-input-row {
-      display: flex;
-      gap: 8px;
-      margin-top: auto;
-    }
-    .chat-input-row input {
-      flex: 1;
-      padding: 8px 10px;
-      font-size: 13px;
-      border-radius: 8px;
-      border: 1px solid #ccd2e1;
-      box-sizing: border-box;
-    }
-    .chat-input-row button {
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: none;
-      background: #4a90e2;
-      color: white;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .chat-input-row button:hover:not([disabled]) {
-      background: #3578c8;
-    }
-    .chat-input-row button[disabled] {
-      opacity: 0.6;
-      cursor: default;
-    }
+    <!-- socket.io 客戶端 -->
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
 
-    .system-msg {
-      color: #888;
-    }
-    .me-msg {
-      color: #2f7d32;
-    }
-    .partner-msg {
-      color: #333;
-    }
+  <body class="bg-slate-900 text-slate-100 min-h-screen">
+    <div class="max-w-5xl mx-auto px-4 py-6">
+      <!-- 上方列：LOGO + 暱稱 + 登出 -->
+      <header class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-semibold tracking-tight">
+            Mōyu Club 🐟
+          </h1>
+          <p class="text-slate-400 text-sm">
+            只讓真正懂「魚的快樂」的人，遇見彼此。
+          </p>
+        </div>
 
-    /* 已保留緣分列表 */
-    .saved-section {
-      margin-top: 14px;
-      padding-top: 10px;
-      border-top: 1px dashed #d0d7e2;
-    }
-    .saved-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .saved-header h3 {
-      font-size: 14px;
-      margin: 0;
-    }
-    .saved-list {
-      margin-top: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .saved-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f8f9ff;
-      border-radius: 10px;
-      padding: 6px 10px;
-      font-size: 13px;
-    }
-    .saved-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .saved-label {
-      font-weight: 500;
-    }
-    .saved-time {
-      font-size: 11px;
-      color: #777;
-    }
-    .saved-actions {
-      display: flex;
-      gap: 6px;
-    }
-    .saved-actions button {
-      border-radius: 8px;
-      border: none;
-      padding: 4px 8px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .btn-chat-again {
-      background: #4a90e2;
-      color: #fff;
-    }
-    .btn-delete {
-      background: #ffffff;
-      border: 1px solid #d0d7e2;
-      color: #555;
-    }
-    .saved-hint {
-      font-size: 11px;
-      color: #999;
-      margin-top: 4px;
-    }
-  </style>
-</head>
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <div class="text-sm text-slate-400">
+              嗨，
+              <span id="nickname-text" class="font-semibold text-emerald-300"
+                >...</span
+              >
+            </div>
+            <div id="lang-text" class="text-xs text-slate-500">
+              語言：依帳戶設定
+            </div>
+          </div>
+          <button
+            id="logout-btn"
+            class="text-xs px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700"
+          >
+            登出
+          </button>
+        </div>
+      </header>
 
-<body>
-  <div class="shell">
-    <div class="top-bar">
-      <div class="logo-title">Moyu Club 🐟</div>
-      <div class="user-area">
-        <span id="nicknameBadge" class="badge">暱稱載入中…</span>
-        <button class="btn-link" id="btnAccount">帳號設定</button>
-        <button class="btn-link" id="btnLogout">登出</button>
-      </div>
+      <main class="grid md:grid-cols-2 gap-6">
+        <!-- 左側：狀態 / 隨機配對 / 已保留緣分 -->
+        <section class="space-y-4">
+          <!-- 狀態卡片 -->
+          <div class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700">
+            <h2 class="text-sm font-semibold text-slate-200 mb-2">
+              目前狀態
+            </h2>
+            <p id="status-text" class="text-sm text-slate-300">
+              正在載入使用者資訊...
+            </p>
+          </div>
+
+          <!-- 隨機配對卡片 -->
+          <div
+            id="match-panel"
+            class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700"
+          >
+            <h2 class="text-sm font-semibold text-slate-200 mb-2">
+              隨機摸魚配對
+            </h2>
+            <p class="text-xs text-slate-400 mb-3">
+              按下開始之後，我們會幫你找一隻同樣想偷懶的魚。配對成功後有 5
+              秒時間可以聊天，再決定要不要保留這段緣分。
+            </p>
+            <button
+              id="start-match-btn"
+              class="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-900 text-sm font-semibold hover:bg-emerald-400 disabled:bg-slate-600 disabled:text-slate-300"
+            >
+              開始摸魚配對
+            </button>
+            <p
+              id="match-hint"
+              class="text-xs text-slate-400 mt-2 min-h-[1.5rem]"
+            ></p>
+          </div>
+
+          <!-- 已保留緣分卡片 -->
+          <div class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700">
+            <h2 class="text-sm font-semibold text-slate-200 mb-1">
+              已保留的摸魚緣分
+            </h2>
+            <p class="text-xs text-slate-400 mb-3">
+              當雙方都按下「保留這段緣分」時，你們會出現在這裡。點一下就能再次偷閒聊天。
+            </p>
+            <div
+              id="saved-list"
+              class="space-y-2 max-h-60 overflow-y-auto text-sm"
+            >
+              <div class="text-slate-500 text-xs">
+                目前還沒有保留的對話。
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 右側：聊天室 -->
+        <section>
+          <div
+            id="chat-card"
+            class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700 hidden flex flex-col h-full"
+          >
+            <!-- 聊天室標題列 -->
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <div class="text-xs text-slate-400 uppercase tracking-wide">
+                  摸魚配對聊天室
+                </div>
+                <div
+                  id="chat-title"
+                  class="text-sm font-semibold text-slate-200"
+                >
+                  尚未配對
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div
+                  id="countdown-wrap"
+                  class="px-2 py-1 rounded-full bg-slate-900/70 border border-amber-400/40 text-xs text-amber-300 hidden"
+                >
+                  ⏳ 剩餘
+                  <span id="countdown" class="font-mono">5s</span>
+                </div>
+                <button
+                  id="force-end-btn"
+                  class="text-xs px-2.5 py-1 rounded-full border border-slate-600 text-slate-300 hover:bg-slate-700"
+                >
+                  結束對話
+                </button>
+              </div>
+            </div>
+
+            <!-- 聊天訊息區 -->
+            <div
+              id="messages"
+              class="flex-1 bg-slate-900/60 rounded-xl p-3 text-sm space-y-2 overflow-y-auto"
+            >
+              <div class="text-xs text-slate-500 text-center">
+                配對成功後，這裡會出現你們的對話。
+              </div>
+            </div>
+
+            <!-- 輸入區 -->
+            <div class="mt-3">
+              <div class="flex items-center gap-2">
+                <input
+                  id="chat-input"
+                  type="text"
+                  class="flex-1 px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-700 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  placeholder="輸入訊息，按 Enter 或點右邊送出"
+                />
+                <button
+                  id="send-btn"
+                  class="px-3 py-2 rounded-xl bg-emerald-500 text-slate-900 text-sm font-semibold hover:bg-emerald-400"
+                >
+                  送出
+                </button>
+              </div>
+            </div>
+
+            <!-- 倒數結束後的選項 -->
+            <div
+              id="keep-actions"
+              class="mt-3 pt-3 border-t border-slate-700 hidden"
+            >
+              <div class="text-xs text-slate-400 mb-2">
+                時間到了，要保留這段摸魚緣分嗎？
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  id="keep-btn"
+                  class="flex-1 py-2 rounded-xl bg-emerald-500 text-slate-900 text-sm font-semibold hover:bg-emerald-400"
+                >
+                  保留這段緣分
+                </button>
+                <button
+                  id="end-btn"
+                  class="flex-1 py-2 rounded-xl bg-slate-700 text-slate-100 text-sm hover:bg-slate-600"
+                >
+                  結束並返回主畫面
+                </button>
+              </div>
+              <div
+                id="keep-hint"
+                class="text-[11px] text-slate-500 mt-1 min-h-[1.25rem]"
+              ></div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
 
-    <div class="main">
-      <!-- 左側：配對與狀態 -->
-      <div class="panel">
-        <h3>今日摸魚狀態</h3>
-        <div class="status-text" id="statusText">尚未開始配對</div>
-        <div class="big-number" id="timerText">— : —</div>
-        <div class="hint">
-          按下「開始配對」後，可以繼續工作。配對成功會在這裡提醒你。
-        </div>
+    <!-- Firebase + 主邏輯 -->
+    <script type="module">
+      // --- Firebase imports ---
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        collection,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-        <button class="btn-main" id="btnMatch">開始配對</button>
+      // --- Firebase config（跟你其他頁面一樣） ---
+      const firebaseConfig = {
+        apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
+        authDomain: "moyu-club.firebaseapp.com",
+        projectId: "moyu-club",
+        storageBucket: "moyu-club.firebasestorage.app",
+        messagingSenderId: "178708686787",
+        appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
+        measurementId: "G-GPV3CMCZ0T",
+      };
 
-        <div class="timer" id="matchInfo">目前線上悠遊中的魚：--</div>
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
-        <div class="keep-row" id="keepRow">
-          <button class="btn-secondary" id="btnKeep" disabled>保留這段緣分</button>
-          <button class="btn-danger" id="btnEnd" disabled>結束對話</button>
-        </div>
-      </div>
+      // --- DOM 快速取用 ---
+      const nicknameText = document.getElementById("nickname-text");
+      const langText = document.getElementById("lang-text");
+      const statusText = document.getElementById("status-text");
+      const matchPanel = document.getElementById("match-panel");
+      const matchHint = document.getElementById("match-hint");
+      const startMatchBtn = document.getElementById("start-match-btn");
 
-      <!-- 右側：聊天區 -->
-      <div class="panel">
-        <h3>對話窗</h3>
-        <div id="chatLog" class="chat-log">
-          <div class="system-msg">尚未配對，請先在左側按「開始配對」。</div>
-        </div>
+      const chatCard = document.getElementById("chat-card");
+      const chatTitle = document.getElementById("chat-title");
+      const messagesEl = document.getElementById("messages");
+      const countdownWrap = document.getElementById("countdown-wrap");
+      const countdownEl = document.getElementById("countdown");
+      const chatInput = document.getElementById("chat-input");
+      const sendBtn = document.getElementById("send-btn");
+      const forceEndBtn = document.getElementById("force-end-btn");
 
-        <div class="chat-input-row">
-          <input id="chatInput" type="text" placeholder="按 Enter 送出訊息" disabled />
-          <button id="btnSend" disabled>送出</button>
-        </div>
-      </div>
-    </div>
+      const keepActions = document.getElementById("keep-actions");
+      const keepBtn = document.getElementById("keep-btn");
+      const endBtn = document.getElementById("end-btn");
+      const keepHint = document.getElementById("keep-hint");
+      const savedListEl = document.getElementById("saved-list");
+      const logoutBtn = document.getElementById("logout-btn");
 
-    <!-- 已保留緣分清單 -->
-    <div class="saved-section">
-      <div class="saved-header">
-        <h3>已保留的緣分</h3>
-        <span style="font-size: 11px; color:#999;">最多保留 3 組</span>
-      </div>
-      <div id="savedList" class="saved-list">
-        <!-- 動態生成 -->
-      </div>
-      <div class="saved-hint" id="savedHint">
-        還沒有保留的緣分。時間到時，如果雙方都按下「保留這段緣分」，就會出現在這裡。
-      </div>
-    </div>
-  </div>
+      // --- 狀態變數 ---
+      let socket = null;
+      let currentUser = null;
+      let currentUid = null;
+      let currentNickname = "";
+      let currentLang = localStorage.getItem("moyuLang") || "zh";
 
-  <!-- socket.io 客戶端 -->
-  <script src="/socket.io/socket.io.js"></script>
+      let chatMode = null; // "random" or "saved"
+      let chatLocked = false;
+      let countdownTimer = null;
+      let countdownRemaining = 5; // 測試用 5 秒
 
-  <!-- Firebase + 主程式 -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc
-    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+      let currentPartnerUid = null;
+      let currentPartnerNickname = null;
+      let currentRoomId = null;
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
-      authDomain: "moyu-club.firebaseapp.com",
-      projectId: "moyu-club",
-      storageBucket: "moyu-club.firebasestorage.app",
-      messagingSenderId: "178708686787",
-      appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
-      measurementId: "G-GPV3CMCZ0T"
-    };
+      // --- 簡單 i18n（先保留基礎，之後可擴充） ---
+      const i18n = {
+        zh: {
+          startMatching: "開始摸魚配對",
+          matching: "🎣 正在尋找另一隻魚...",
+          idle: "你現在可以開始摸魚配對。",
+          chatTitleRandom: (name) => `正在和 ${name} 聊天`,
+          chatTitleSaved: (name) => `已保留緣分：${name}`,
+          chatEnded: "對話已結束，可以重新配對或找已保留緣分。",
+          timeUp: "時間到了，請選擇是否要保留這段緣分。",
+          keepSuccess: "這段緣分已被保留，可以繼續聊天 ✨",
+          partnerWantsKeep: "對方想保留這段緣分，如果你也按下，就會一起被收藏。",
+        },
+        en: {
+          startMatching: "Start random match",
+          matching: "🎣 Searching for another fish...",
+          idle: "You can start a new match now.",
+          chatTitleRandom: (name) => `Chatting with ${name}`,
+          chatTitleSaved: (name) => `Saved connection: ${name}`,
+          chatEnded: "Chat ended. You can start a new match or open a saved one.",
+          timeUp: "Time's up. Decide whether to keep this connection.",
+          keepSuccess: "Connection saved. You can keep chatting ✨",
+          partnerWantsKeep:
+            "Your partner wants to keep this connection. Tap keep to save it too.",
+        },
+      };
 
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db   = getFirestore(app);
-
-    // 🔧 DOM 元素
-    const nicknameBadge   = document.getElementById("nicknameBadge");
-    const statusText      = document.getElementById("statusText");
-    const timerText       = document.getElementById("timerText");
-    const matchInfo       = document.getElementById("matchInfo");
-    const btnMatch        = document.getElementById("btnMatch");
-    const btnKeep         = document.getElementById("btnKeep");
-    const btnEnd          = document.getElementById("btnEnd");
-    const keepRow         = document.getElementById("keepRow");
-    const chatLog         = document.getElementById("chatLog");
-    const chatInput       = document.getElementById("chatInput");
-    const btnSend         = document.getElementById("btnSend");
-    const btnAccount      = document.getElementById("btnAccount");
-    const btnLogout       = document.getElementById("btnLogout");
-    const savedList       = document.getElementById("savedList");
-    const savedHint       = document.getElementById("savedHint");
-
-    let currentUser = null;
-    let nickname    = "匿名魚";
-    let socket      = null;
-    let countdownId = null;
-    let timeLeft    = 5;      // ✅ 測試用 5 秒
-    let chatActive  = false;  // 是否正在聊天中
-    let savedMatches = [];    // 先存在前端，之後可以搬到 Firestore
-
-    function appendMsg(text, cssClass = "system-msg") {
-      const div = document.createElement("div");
-      div.className = cssClass;
-      div.textContent = text;
-      chatLog.appendChild(div);
-      chatLog.scrollTop = chatLog.scrollHeight;
-    }
-
-    function resetChatUI() {
-      statusText.textContent = "尚未開始配對";
-      timerText.textContent  = "— : —";
-      matchInfo.textContent  = "目前線上悠遊中的魚：--";
-      btnMatch.disabled = false;
-
-      // 保留 / 結束按鈕收起來
-      keepRow.style.display = "none";
-      btnKeep.disabled = true;
-      btnEnd.disabled  = true;
-
-      chatInput.disabled = true;
-      btnSend.disabled   = true;
-      chatInput.value    = "";
-      chatLog.innerHTML  = '<div class="system-msg">尚未配對，請先在左側按「開始配對」。</div>';
-
-      if (countdownId) {
-        clearInterval(countdownId);
-        countdownId = null;
+      function t(key, ...args) {
+        const pack = i18n[currentLang] || i18n["zh"];
+        const val = pack[key];
+        if (typeof val === "function") return val(...args);
+        return val ?? key;
       }
 
-      chatActive = false;
-      btnAccount.disabled = false;  // ✅ 聊天結束後恢復可修改帳號設定
-    }
-
-    function startTimer() {
-      if (countdownId) {
-        clearInterval(countdownId);
+      function applyLangTexts() {
+        startMatchBtn.textContent = t("startMatching");
+        langText.textContent =
+          currentLang === "en" ? "Language: English" : "語言：中文（依帳戶設定）";
       }
-      timeLeft = 5; // ✅ 測試先用 5 秒
-      updateTimerText();
-      countdownId = setInterval(() => {
-        timeLeft -= 1;
-        if (timeLeft <= 0) {
-          clearInterval(countdownId);
-          countdownId = null;
-          timerText.textContent = "時間到 🎣";
-          statusText.textContent = "時間到，這段緣分要保留嗎？";
 
-          // ✅ 時間到 → 才顯示保留／結束區域
-          keepRow.style.display = "flex";
-          btnKeep.disabled = false;
-          btnEnd.disabled  = false;
-        } else {
-          updateTimerText();
+      // --- UI helper functions ---
+
+      function setStatus(msg) {
+        statusText.textContent = msg;
+      }
+
+      function showMatchPanel() {
+        matchPanel.classList.remove("opacity-50", "pointer-events-none");
+        startMatchBtn.disabled = false;
+      }
+
+      function disableMatchPanelWhileChat() {
+        matchPanel.classList.add("opacity-50", "pointer-events-none");
+        startMatchBtn.disabled = true;
+      }
+
+      function showChatCard() {
+        chatCard.classList.remove("hidden");
+      }
+
+      function hideChatCard() {
+        chatCard.classList.add("hidden");
+      }
+
+      function showCountdown() {
+        countdownWrap.classList.remove("hidden");
+      }
+
+      function hideCountdown() {
+        countdownWrap.classList.add("hidden");
+      }
+
+      function updateCountdownUI() {
+        if (!countdownEl) return;
+        countdownEl.textContent = `${countdownRemaining}s`;
+      }
+
+      function startCountdown() {
+        stopCountdown();
+        countdownRemaining = 5; // 之後要改成 300 秒只要這裡調整
+        chatLocked = false;
+        showCountdown();
+        updateCountdownUI();
+
+        countdownTimer = setInterval(() => {
+          countdownRemaining -= 1;
+          if (countdownRemaining <= 0) {
+            stopCountdown();
+            chatLocked = true;
+            hideCountdown();
+            showKeepActions();
+            appendSystemMessage(t("timeUp"));
+          } else {
+            updateCountdownUI();
+          }
+        }, 1000);
+      }
+
+      function stopCountdown() {
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
         }
-      }, 1000);
-    }
-
-    function updateTimerText() {
-      const m = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-      const s = String(timeLeft % 60).padStart(2, "0");
-      timerText.textContent = `${m}:${s}`;
-    }
-
-    function renderSavedMatches() {
-      savedList.innerHTML = "";
-      if (savedMatches.length === 0) {
-        savedHint.textContent = "還沒有保留的緣分。時間到時，如果雙方都按下「保留這段緣分」，就會出現在這裡。";
-        return;
       }
-      savedHint.textContent = "";
-      savedMatches.forEach((m, idx) => {
-        const row = document.createElement("div");
-        row.className = "saved-item";
 
-        const meta = document.createElement("div");
-        meta.className = "saved-meta";
-
-        const label = document.createElement("div");
-        label.className = "saved-label";
-        label.textContent = m.label || `摸魚夥伴 #${idx + 1}`;
-
-        const time = document.createElement("div");
-        time.className = "saved-time";
-        time.textContent = "保留於 " + m.savedAt;
-
-        meta.appendChild(label);
-        meta.appendChild(time);
-
-        const actions = document.createElement("div");
-        actions.className = "saved-actions";
-
-        const btnChatAgain = document.createElement("button");
-        btnChatAgain.className = "btn-chat-again";
-        btnChatAgain.textContent = "再次聊天";
-        btnChatAgain.onclick = () => {
-          alert("之後會做成可直接連上指定房間，目前先保留紀錄即可。");
-        };
-
-        const btnDelete = document.createElement("button");
-        btnDelete.className = "btn-delete";
-        btnDelete.textContent = "刪除";
-        btnDelete.onclick = () => {
-          savedMatches.splice(idx, 1);
-          renderSavedMatches();
-        };
-
-        actions.appendChild(btnChatAgain);
-        actions.appendChild(btnDelete);
-
-        row.appendChild(meta);
-        row.appendChild(actions);
-        savedList.appendChild(row);
-      });
-    }
-
-    function addSavedMatch(roomId) {
-      if (savedMatches.length >= 3) {
-        alert("你已經保留了 3 組緣分，請先刪除其中一組再保留新的。");
-        return;
+      function showKeepActions() {
+        keepActions.classList.remove("hidden");
+        keepHint.textContent = "";
       }
-      savedMatches.push({
+
+      function hideKeepActions() {
+        keepActions.classList.add("hidden");
+        keepHint.textContent = "";
+      }
+
+      function clearMessages() {
+        messagesEl.innerHTML = "";
+      }
+
+      function appendSystemMessage(text) {
+        const div = document.createElement("div");
+        div.className = "text-center text-[11px] text-slate-400 my-1";
+        div.textContent = text;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      function appendChatMessage(text, isMe, fromName) {
+        if (!text) return;
+
+        const wrap = document.createElement("div");
+        wrap.className = `flex ${isMe ? "justify-end" : "justify-start"}`;
+
+        const bubble = document.createElement("div");
+        bubble.className = `px-3 py-2 rounded-lg max-w-xs break-words shadow ${
+          isMe
+            ? "bg-emerald-500 text-slate-900"
+            : "bg-slate-700 text-slate-100"
+        }`;
+
+        if (!isMe) {
+          const nameSpan = document.createElement("div");
+          nameSpan.className = "text-[11px] text-slate-300 mb-0.5";
+          nameSpan.textContent = fromName || "對方";
+          bubble.appendChild(nameSpan);
+        }
+
+        const textSpan = document.createElement("div");
+        textSpan.textContent = text;
+        bubble.appendChild(textSpan);
+
+        wrap.appendChild(bubble);
+        messagesEl.appendChild(wrap);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      function updateChatTitle() {
+        if (!currentPartnerNickname) {
+          chatTitle.textContent = "尚未配對";
+          return;
+        }
+        if (chatMode === "saved") {
+          chatTitle.textContent = t("chatTitleSaved", currentPartnerNickname);
+        } else {
+          chatTitle.textContent = t("chatTitleRandom", currentPartnerNickname);
+        }
+      }
+
+      function resetChatState() {
+        stopCountdown();
+        hideCountdown();
+        hideKeepActions();
+        chatLocked = false;
+        chatMode = null;
+        currentPartnerUid = null;
+        currentPartnerNickname = null;
+        currentRoomId = null;
+        clearMessages();
+        chatInput.value = "";
+        updateChatTitle();
+      }
+
+      function backToHomeIdle() {
+        resetChatState();
+        hideChatCard();
+        showMatchPanel();
+        setStatus(t("idle"));
+        matchHint.textContent = "";
+      }
+
+      // --- Firestore：儲存 / 載入已保留緣分 ---
+
+      async function saveRoomToFirestore(
         roomId,
-        label: "摸魚夥伴",
-        savedAt: new Date().toLocaleString()
-      });
-      renderSavedMatches();
-    }
+        myUid,
+        partnerUid,
+        partnerNickname
+      ) {
+        if (!roomId || !myUid || !partnerUid) return;
 
-    function initSocket() {
-      if (socket) return;
+        const createdAt = new Date().toISOString();
 
-      socket = io({
-        query: { nickname }
-      });
+        // rooms collection
+        await setDoc(
+          doc(db, "rooms", roomId),
+          {
+            participants: [myUid, partnerUid],
+            createdAt,
+          },
+          { merge: true }
+        );
 
-      socket.on("connect", () => {
-        console.log("Socket 連線成功：", socket.id);
-        matchInfo.textContent = "已連線到摸魚池，等待你開始配對。";
-      });
+        // 自己這邊的 savedRooms
+        await setDoc(
+          doc(db, "users", myUid, "savedRooms", roomId),
+          {
+            roomId,
+            partnerUid,
+            partnerNickname,
+            createdAt,
+          },
+          { merge: true }
+        );
 
-      socket.on("status", (text) => {
-        statusText.textContent = text;
-      });
-
-      socket.on("match", (text) => {
-        statusText.textContent = text;
-        appendMsg("系統：" + text, "system-msg");
-        btnMatch.disabled = true;
-
-        // 已配對 → 可立即開始聊天
-        chatInput.disabled = false;
-        btnSend.disabled   = false;
-
-        // 聊天中
-        chatActive = true;
-        btnAccount.disabled = true;  // ✅ 聊天中不可改帳號/暱稱
-
-        // 倒數開始
-        keepRow.style.display = "none";
-        btnKeep.disabled = true;
-        btnEnd.disabled  = false;
-        startTimer();
-      });
-
-      socket.on("chat", (msg) => {
-        appendMsg("對方：" + msg, "partner-msg");
-      });
-
-      // ✅ 雙方都按下「保留」後，伺服器廣播此事件
-      socket.on("keep-confirmed", ({ roomId }) => {
-        statusText.textContent = "這段緣分被你們一起保留下來，可以慢慢聊。";
-        appendMsg("系統：雙方都選擇保留，這段緣分被記錄下來。", "system-msg");
-        timerText.textContent = "∞";
-
-        // 不再需要保留按鈕，但可以隨時結束
-        btnKeep.disabled = true;
-        // 你可以選擇讓 btnEnd 保持可用，讓任何一方都能結束對話
-        btnEnd.disabled  = false;
-
-        // 註冊一筆保留紀錄
-        addSavedMatch(roomId);
-      });
-
-      socket.on("chat-end", () => {
-        appendMsg("系統：對方已離開，這段緣分先到這裡。", "system-msg");
-        resetChatUI();
-      });
-    }
-
-    // 🧠 Auth 監聽
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-        return;
+        // 對方那邊的 savedRooms
+        await setDoc(
+          doc(db, "users", partnerUid, "savedRooms", roomId),
+          {
+            roomId,
+            partnerUid: myUid,
+            partnerNickname: currentNickname,
+            createdAt,
+          },
+          { merge: true }
+        );
       }
 
-      currentUser = user;
-      try {
-        const ref  = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
-        const data = snap.exists() ? snap.data() : {};
+      async function loadSavedRooms() {
+        if (!currentUid) return;
+        savedListEl.innerHTML =
+          '<div class="text-xs text-slate-500">載入中...</div>';
 
-        nickname = (data.nickname && data.nickname.trim()) || "匿名魚";
-        nicknameBadge.textContent = nickname;
-        initSocket();
-      } catch (err) {
-        console.error("載入使用者暱稱失敗：", err);
-        nicknameBadge.textContent = "暱稱載入失敗";
-        initSocket();
+        const colRef = collection(db, "users", currentUid, "savedRooms");
+        const snap = await getDocs(colRef);
+
+        if (snap.empty) {
+          savedListEl.innerHTML =
+            '<div class="text-xs text-slate-500">目前還沒有保留的對話。</div>';
+          return;
+        }
+
+        let html = "";
+        const rows = [];
+
+        snap.forEach((docSnap) => {
+          const data = docSnap.data();
+          rows.push({
+            roomId: data.roomId,
+            partnerUid: data.partnerUid,
+            partnerNickname: data.partnerNickname || "摸魚夥伴",
+            createdAt: data.createdAt,
+          });
+        });
+
+        // 簡單依時間排序（新到舊）
+        rows.sort((a, b) =>
+          (b.createdAt || "").localeCompare(a.createdAt || "")
+        );
+
+        rows.forEach((r) => {
+          html += `
+            <button
+              class="w-full text-left px-3 py-2 rounded-xl bg-slate-900/60 hover:bg-slate-800 flex items-center justify-between gap-2"
+              data-room-id="${r.roomId}"
+              data-partner-uid="${r.partnerUid}"
+              data-partner-nickname="${r.partnerNickname}"
+            >
+              <div>
+                <div class="text-sm text-slate-100">${r.partnerNickname}</div>
+                <div class="text-[11px] text-slate-500">
+                  房間 ID: ${r.roomId.slice(0, 8)}...
+                </div>
+              </div>
+              <div class="text-[11px] text-emerald-300">
+                再次摸魚
+              </div>
+            </button>
+          `;
+        });
+
+        savedListEl.innerHTML = html;
+
+        // 綁定 click 事件
+        savedListEl.querySelectorAll("button[data-room-id]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const roomId = btn.getAttribute("data-room-id");
+            const partnerNickname = btn.getAttribute(
+              "data-partner-nickname"
+            );
+            openSavedChat(roomId, partnerNickname);
+          });
+        });
       }
-    });
 
-    // 🔘 事件綁定
+      function openSavedChat(roomId, partnerNickname) {
+        if (!socket) return;
 
-    // 開始配對
-    btnMatch.addEventListener("click", () => {
-      if (!socket) {
-        alert("尚未連線到伺服器，請稍後再試。");
-        return;
+        chatMode = "saved";
+        chatLocked = false;
+        currentRoomId = roomId;
+        currentPartnerNickname = partnerNickname || "摸魚夥伴";
+
+        disableMatchPanelWhileChat();
+        showChatCard();
+        hideCountdown();
+        hideKeepActions();
+        clearMessages();
+        updateChatTitle();
+        appendSystemMessage(
+          `已重新連線 ${currentPartnerNickname}，這是你們保留的摸魚緣分。`
+        );
+
+        socket.emit("join-saved-room", { roomId });
       }
-      btnMatch.disabled = true;
-      statusText.textContent = "配對中… 正在尋找另一隻魚";
-      appendMsg("系統：開始配對，等一下看看會游來哪一隻魚。", "system-msg");
-      // 目前配對由 server 自動完成
-    });
-    
-// 共用的送出訊息函式（按 Enter 或按送出按鈕 都會走同一條）
-function sendMessage() {
-  const text = chatInput.value.trim();
-  if (!text || !socket) return;
 
-  socket.emit("chat", text);
-  appendMsg("我：" + text, "me-msg");
+      // --- Socket.io 相關 ---
 
-  // 🔥🔥🔥 永遠清空（不受配對前後影響）
-  chatInput.value = "";
-}
+      function setupSocketHandlers() {
+        if (!socket) return;
 
-// 按按鈕送出
-btnSend.addEventListener("click", sendMessage);
+        socket.on("connect", () => {
+          console.log("🔌 socket 連線成功", socket.id);
+        });
 
-// 按 Enter 送出
-chatInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();  // 不要觸發換行
-    sendMessage();
-  }
-});
+        socket.on("status", (text) => {
+          setStatus(text);
+        });
 
-    // 保留緣分（倒數結束後才按得到）
-    btnKeep.addEventListener("click", () => {
-      if (!socket) return;
-      socket.emit("keep-request");
-      statusText.textContent = "已送出保留請求，等待對方回應…";
-      appendMsg("系統：你選擇保留這段緣分，等待對方的選擇。", "system-msg");
-      btnKeep.disabled = true;
-      // btnEnd 保留可按，讓你仍然可以結束對話
-    });
+        socket.on("match", (payload) => {
+          chatMode = "random";
+          chatLocked = false;
+          currentPartnerNickname =
+            payload.partnerNickname || "摸魚夥伴";
+          currentPartnerUid = payload.partnerUid || null;
+          currentRoomId = null;
 
-    // 結束對話（任何時刻都可以按）
-    btnEnd.addEventListener("click", () => {
-      if (socket) {
+          disableMatchPanelWhileChat();
+          showChatCard();
+          clearMessages();
+          updateChatTitle();
+          appendSystemMessage(payload.message || "配對成功！");
+          matchHint.textContent = "";
+          setStatus("配對成功，開始聊天吧！");
+          startCountdown();
+        });
+
+        socket.on("chat", (msg) => {
+          const text = msg.text || msg.message || "";
+          const fromName = msg.from || "對方";
+          const isMe = fromName === currentNickname;
+          appendChatMessage(text, isMe, fromName);
+        });
+
+        socket.on("show-keep-option", () => {
+          // 對方先按了「保留」，我們這邊提前顯示選項＋提示
+          showKeepActions();
+          keepHint.textContent = t("partnerWantsKeep");
+        });
+
+        socket.on("keep-confirmed", async ({ partnerUid, partnerNickname }) => {
+          // 兩邊都按下保留
+          currentPartnerUid = partnerUid;
+          currentPartnerNickname =
+            partnerNickname || currentPartnerNickname || "摸魚夥伴";
+
+          const uidA = currentUid;
+          const uidB = partnerUid || currentUid;
+          const roomId = [uidA, uidB].sort().join("_");
+
+          chatMode = "saved";
+          chatLocked = false;
+          currentRoomId = roomId;
+
+          stopCountdown();
+          hideCountdown();
+          hideKeepActions();
+          updateChatTitle();
+          appendSystemMessage(t("keepSuccess"));
+
+          // 加入房間（後端會把 socket.currentRoomId 設定好）
+          socket.emit("join-saved-room", { roomId });
+
+          // Firestore 寫入房間資料與 savedRooms
+          try {
+            await saveRoomToFirestore(
+              roomId,
+              currentUid,
+              currentPartnerUid,
+              currentPartnerNickname
+            );
+            await loadSavedRooms();
+          } catch (err) {
+            console.error("儲存保留緣分失敗：", err);
+          }
+        });
+
+        socket.on("saved-room-joined", ({ roomId }) => {
+          console.log("🧵 已加入保留房間", roomId);
+        });
+
+        socket.on("chat-end", ({ reason } = {}) => {
+          console.log("💨 chat-end：", reason);
+          appendSystemMessage(t("chatEnded"));
+          backToHomeIdle();
+        });
+      }
+
+      function sendMessage() {
+        if (chatLocked) return;
+
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        socket.emit("chat", {
+          text,
+          from: currentNickname,
+        });
+
+        appendChatMessage(text, true, currentNickname);
+        chatInput.value = "";
+      }
+
+      // --- 事件綁定 ---
+
+      startMatchBtn.addEventListener("click", () => {
+        if (!socket) return;
+        matchHint.textContent = t("matching");
+        setStatus(t("matching"));
+        hideChatCard();
+        socket.emit("start-matching");
+      });
+
+      sendBtn.addEventListener("click", sendMessage);
+
+      chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      forceEndBtn.addEventListener("click", () => {
+        if (!socket) return;
         socket.emit("end-chat");
-      }
-      appendMsg("系統：你結束了這段對話。", "system-msg");
-      resetChatUI();
-    });
+      });
 
-    // 帳號設定
-    btnAccount.addEventListener("click", () => {
-      if (chatActive) {
-        alert("目前正在聊天中，請先結束對話再修改帳號設定。");
-        return;
-      }
-      window.location.href = "account.html";
-    });
+      endBtn.addEventListener("click", () => {
+        if (!socket) return;
+        socket.emit("end-chat");
+      });
 
-    // 登出
-    btnLogout.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-      } catch (err) {
-        console.error("登出失敗：", err);
-      } finally {
-        window.location.href = "login.html";
-      }
-    });
+      keepBtn.addEventListener("click", () => {
+        if (!socket) return;
+        keepHint.textContent = "已送出保留請求，等待對方選擇...";
+        socket.emit("keep-request");
+      });
 
-    // 一開始先 reset UI
-    resetChatUI();
-    renderSavedMatches();
-  </script>
-</body>
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+        } catch (e) {
+          console.error(e);
+        } finally {
+          localStorage.removeItem("moyuUid");
+          localStorage.removeItem("moyuNickname");
+          window.location.href = "login.html";
+        }
+      });
+
+      // --- Firebase Auth：確認登入狀態，載入暱稱 & 建立 socket ---
+
+      applyLangTexts();
+      setStatus("正在檢查登入狀態...");
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        currentUser = user;
+        currentUid = user.uid;
+
+        try {
+          const userSnap = await getDoc(doc(db, "users", currentUid));
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+            currentNickname = data.nickname || "匿名魚";
+            if (data.lang && (data.lang === "zh" || data.lang === "en")) {
+              currentLang = data.lang;
+              localStorage.setItem("moyuLang", currentLang);
+              applyLangTexts();
+            }
+          } else {
+            currentNickname = "匿名魚";
+          }
+        } catch (err) {
+          console.error("讀取使用者暱稱失敗：", err);
+          currentNickname = "匿名魚";
+        }
+
+        nicknameText.textContent = currentNickname;
+        localStorage.setItem("moyuUid", currentUid);
+        localStorage.setItem("moyuNickname", currentNickname);
+
+        setStatus(t("idle"));
+
+        // 建立 socket 連線
+        socket = io({
+          query: {
+            uid: currentUid,
+            nickname: currentNickname,
+          },
+        });
+
+        setupSocketHandlers();
+
+        // 載入已保留緣分
+        await loadSavedRooms();
+      });
+    </script>
+  </body>
 </html>

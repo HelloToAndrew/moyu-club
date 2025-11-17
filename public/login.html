@@ -1,323 +1,369 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <title>Moyu Club - 登入</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mōyu Club - 登入</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
+      <!-- 頂部：標題 + 語言切換 -->
+      <div class="flex items-center justify-between mb-4">
+        <h1 id="titleText" class="text-xl font-bold text-slate-800">
+          歡迎來到 Mōyu Club
+        </h1>
+        <div class="flex items-center gap-1 text-[11px]">
+          <button
+            id="langZh"
+            class="px-2 py-1 rounded-full border border-slate-200 text-slate-600"
+          >
+            中文
+          </button>
+          <button
+            id="langEn"
+            class="px-2 py-1 rounded-full border border-transparent text-slate-400"
+          >
+            EN
+          </button>
+        </div>
+      </div>
 
-  <style>
-    body {
-      background: #f2f6ff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .card {
-      width: 380px;
-      background: #ffffff;
-      padding: 24px 28px 28px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-    }
-    h2 {
-      margin-top: 0;
-      margin-bottom: 4px;
-      font-size: 22px;
-      text-align: center;
-    }
-    p.sub {
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-size: 13px;
-      color: #666;
-      text-align: center;
-    }
-    label {
-      font-size: 13px;
-      color: #444;
-      display: block;
-      margin-bottom: 4px;
-      margin-top: 10px;
-    }
-    input {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #d0d7e2;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-    input:focus {
-      outline: none;
-      border-color: #4a90e2;
-      box-shadow: 0 0 0 2px rgba(74,144,226,0.18);
-    }
-    button.primary {
-      width: 100%;
-      padding: 10px 0;
-      margin-top: 14px;
-      border: none;
-      border-radius: 10px;
-      background: #4a90e2;
-      color: white;
-      font-size: 15px;
-      cursor: pointer;
-    }
-    button.primary[disabled] {
-      opacity: 0.6;
-      cursor: default;
-    }
-    button.primary:hover:not([disabled]) {
-      background: #3578c8;
-    }
-    .row-links {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 8px;
-      font-size: 13px;
-    }
-    .link {
-      color: #4a90e2;
-      cursor: pointer;
-    }
-    .link:hover {
-      text-decoration: underline;
-    }
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: 18px 0 12px;
-      font-size: 12px;
-      color: #999;
-    }
-    .divider span {
-      flex: 1;
-      height: 1px;
-      background: #e0e4ef;
-    }
-    .divider b {
-      margin: 0 8px;
-      font-weight: 400;
-      white-space: nowrap;
-    }
-    button.google {
-      width: 100%;
-      padding: 9px 0;
-      border-radius: 10px;
-      border: 1px solid #d0d7e2;
-      background: #fff;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    button.google img {
-      width: 18px;
-      height: 18px;
-    }
-    #status {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #888;
-      text-align: center;
-      min-height: 16px;
-    }
-  </style>
+      <p id="subtitleText" class="text-xs text-slate-500 mb-4">
+        登入後，系統會幫你找到今天的摸魚夥伴。
+      </p>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      GoogleAuthProvider,
-      signInWithPopup,
-      sendPasswordResetEmail,
-      signOut,
-      reload
-    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc
-    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+      <!-- Email 登入 -->
+      <div class="space-y-2 mb-4">
+        <label
+          id="emailLabel"
+          class="block text-xs font-medium text-slate-500"
+          >Email</label
+        >
+        <input
+          id="emailInput"
+          type="email"
+          class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+        />
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
-      authDomain: "moyu-club.firebaseapp.com",
-      projectId: "moyu-club",
-      storageBucket: "moyu-club.firebasestorage.app",
-      messagingSenderId: "178708686787",
-      appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
-      measurementId: "G-GPV3CMCZ0T"
-    };
+        <label
+          id="passwordLabel"
+          class="block text-xs font-medium text-slate-500 mt-2"
+          >密碼</label
+        >
+        <input
+          id="passwordInput"
+          type="password"
+          class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+        />
 
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db   = getFirestore(app);
+        <button
+          id="emailLoginBtn"
+          class="mt-3 w-full py-2 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600"
+        >
+          使用 Email 登入
+        </button>
 
-    function setStatus(msg) {
-      const el = document.getElementById("status");
-      if (el) el.textContent = msg || "";
-    }
+        <!-- 忘記密碼 / 註冊新帳號 -->
+        <div class="mt-2 flex items-center justify-between text-[11px]">
+          <button
+            id="forgotBtn"
+            class="text-emerald-600 hover:underline"
+            onclick="window.location.href='reset.html'"
+          >
+            忘記密碼？
+          </button>
+          <button
+            id="signupBtn"
+            class="text-slate-500 hover:underline"
+            onclick="window.location.href='signup.html'"
+          >
+            註冊新帳號
+          </button>
+        </div>
+      </div>
 
-    function setLoading(loading) {
-      const btn = document.getElementById("btnEmailLogin");
-      if (!btn) return;
-      btn.disabled = loading;
-      btn.textContent = loading ? "登入中，請稍候…" : "以 Email 登入";
-    }
+      <!-- 分隔線 -->
+      <div class="flex items-center my-4">
+        <div class="flex-1 h-px bg-slate-200"></div>
+        <span id="orText" class="px-2 text-[11px] text-slate-400"
+          >或 使用 Google 登入</span
+        >
+        <div class="flex-1 h-px bg-slate-200"></div>
+      </div>
 
-    // 🅰 Email 登入（同時看 emailVerified 與 Firestore.verified）
-    window.loginWithEmail = async () => {
-      const email = document.getElementById("email").value.trim();
-      const pw    = document.getElementById("password").value;
+      <!-- ✅ Google 登入：加回 Google icon -->
+      <button
+        id="googleLoginBtn"
+        class="w-full py-2 rounded-xl border border-slate-200 text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2"
+      >
+        <img
+          src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+          alt="Google"
+          class="w-4 h-4"
+        />
+        <span id="googleBtnText">使用 Google 帳號登入</span>
+      </button>
 
-      if (!email || !pw) {
-        alert("請輸入 Email 與密碼");
-        return;
+      <!-- 狀態訊息 -->
+      <p
+        id="statusMsg"
+        class="mt-3 text-center text-[11px] text-slate-400"
+      ></p>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        signInWithPopup,
+        GoogleAuthProvider,
+        onAuthStateChanged,
+        reload,
+      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+      const i18n = {
+        zh: {
+          pageTitle: "Mōyu Club - 登入",
+          title: "歡迎來到 Mōyu Club",
+          subtitle: "登入後，系統會幫你找到今天的摸魚夥伴。",
+          emailLabel: "Email",
+          passwordLabel: "密碼",
+          emailLoginBtn: "使用 Email 登入",
+          forgot: "忘記密碼？",
+          signup: "註冊新帳號",
+          orText: "或 使用 Google 登入",
+          googleBtn: "使用 Google 帳號登入",
+          loggingIn: "登入中，請稍候…",
+          invalid: "登入失敗：",
+          needVerify:
+            "Email 尚未驗證，請先到信箱點擊驗證連結再重新登入。",
+          loadingUser: "載入使用者資料中…",
+        },
+        en: {
+          pageTitle: "Mōyu Club - Login",
+          title: "Welcome to Mōyu Club",
+          subtitle:
+            "Sign in and we'll find today's slacking partner for you.",
+          emailLabel: "Email",
+          passwordLabel: "Password",
+          emailLoginBtn: "Sign in with Email",
+          forgot: "Forgot password?",
+          signup: "Create a new account",
+          orText: "or Sign in with Google",
+          googleBtn: "Sign in with Google",
+          loggingIn: "Signing in, please wait…",
+          invalid: "Login failed: ",
+          needVerify:
+            "Email is not verified yet. Please check your inbox and click the verification link.",
+          loadingUser: "Loading user profile…",
+        },
+      };
+
+      function applyLang(lang) {
+        const t = i18n[lang] || i18n.zh;
+        document.title = t.pageTitle;
+        document.getElementById("titleText").textContent = t.title;
+        document.getElementById("subtitleText").textContent = t.subtitle;
+        document.getElementById("emailLabel").textContent = t.emailLabel;
+        document.getElementById("passwordLabel").textContent =
+          t.passwordLabel;
+        document.getElementById("emailLoginBtn").textContent =
+          t.emailLoginBtn;
+        document.getElementById("forgotBtn").textContent = t.forgot;
+        document.getElementById("signupBtn").textContent = t.signup;
+        document.getElementById("orText").textContent = t.orText;
+        document.getElementById("googleBtnText").textContent = t.googleBtn;
       }
 
-      try {
-        setLoading(true);
-        setStatus("登入中，請稍候…");
+      function updateLangButtons(lang) {
+        const zhBtn = document.getElementById("langZh");
+        const enBtn = document.getElementById("langEn");
+        if (lang === "en") {
+          enBtn.classList.add("border-slate-200", "text-slate-600");
+          enBtn.classList.remove("text-slate-400");
+          zhBtn.classList.remove("border-slate-200", "text-slate-600");
+          zhBtn.classList.add("text-slate-400");
+        } else {
+          zhBtn.classList.add("border-slate-200", "text-slate-600");
+          zhBtn.classList.remove("text-slate-400");
+          enBtn.classList.remove("border-slate-200", "text-slate-600");
+          enBtn.classList.add("text-slate-400");
+        }
+      }
 
-        const cred = await signInWithEmailAndPassword(auth, email, pw);
-        const user = cred.user;
-        await reload(user); // 更新 emailVerified 狀態
+      const firebaseConfig = {
+        apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
+        authDomain: "moyu-club.firebaseapp.com",
+        projectId: "moyu-club",
+        storageBucket: "moyu-club.firebasestorage.app",
+        messagingSenderId: "178708686787",
+        appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
+        measurementId: "G-GPV3CMCZ0T",
+      };
 
-        const userRef = doc(db, "users", user.uid);
-        let snap = await getDoc(userRef);
-        let data = snap.exists() ? snap.data() : null;
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth();
+      const db = getFirestore();
+      const provider = new GoogleAuthProvider();
 
-        // 🔑 關鍵邏輯：兩者都沒過才擋
-        const emailOk    = !!user.emailVerified;
-        const firestoreOk = !!(data && data.verified);
+      let currentLang = localStorage.getItem("moyu_lang") || "zh";
+      applyLang(currentLang);
+      updateLangButtons(currentLang);
 
-        if (!emailOk && !firestoreOk) {
-          await signOut(auth);
-          setLoading(false);
-          setStatus("");
-          alert("Email 尚未完成驗證，請先到信箱點驗證連結。");
+      document.getElementById("langZh").onclick = () => {
+        currentLang = "zh";
+        localStorage.setItem("moyu_lang", currentLang);
+        applyLang(currentLang);
+        updateLangButtons(currentLang);
+      };
+      document.getElementById("langEn").onclick = () => {
+        currentLang = "en";
+        localStorage.setItem("moyu_lang", currentLang);
+        applyLang(currentLang);
+        updateLangButtons(currentLang);
+      };
+
+      const emailInput = document.getElementById("emailInput");
+      const passwordInput = document.getElementById("passwordInput");
+      const emailLoginBtn = document.getElementById("emailLoginBtn");
+      const googleLoginBtn = document.getElementById("googleLoginBtn");
+      const statusMsg = document.getElementById("statusMsg");
+
+      async function ensureUserDoc(user, extra = {}) {
+        const uid = user.uid;
+        const ref = doc(db, "users", uid);
+        const snap = await getDoc(ref);
+
+        const baseData = {
+          email: user.email || "",
+          nickname: "",
+          language: currentLang,
+          createdAt: new Date().toISOString(),
+          verified: user.emailVerified || false,
+          ...extra,
+        };
+
+        if (!snap.exists()) {
+          await setDoc(ref, baseData);
+          return baseData;
+        } else {
+          const data = snap.data();
+          const merged = {
+            ...data,
+            language: data.language || currentLang,
+            verified:
+              typeof data.verified === "boolean"
+                ? data.verified || user.emailVerified
+                : user.emailVerified,
+          };
+          await setDoc(ref, merged, { merge: true });
+          return merged;
+        }
+      }
+
+      async function goNext(user) {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        let data;
+        if (!snap.exists()) {
+          data = await ensureUserDoc(user);
+        } else {
+          data = snap.data();
+        }
+
+        localStorage.setItem("moyu_uid", user.uid);
+        localStorage.setItem("moyu_nickname", data.nickname || "");
+        localStorage.setItem("moyu_lang", data.language || currentLang);
+
+        if (!data.nickname) {
+          window.location.href = "nickname.html";
+        } else {
+          window.location.href = "home.html";
+        }
+      }
+
+      emailLoginBtn.onclick = async () => {
+        const t = i18n[currentLang] || i18n.zh;
+        statusMsg.textContent = t.loggingIn;
+
+        const email = emailInput.value.trim();
+        const pw = passwordInput.value.trim();
+        if (!email || !pw) {
+          statusMsg.textContent = "";
+          alert("請輸入 Email 與密碼");
           return;
         }
 
-        // 若 Firestore 還沒建立 / 還沒標記 verified，就順手補上
-        if (!snap.exists()) {
-          await setDoc(userRef, {
-            email: user.email || email,
-            nickname: "",
-            createdAt: new Date().toISOString(),
-            verified: emailOk || firestoreOk
+        try {
+          const cred = await signInWithEmailAndPassword(auth, email, pw);
+          const user = cred.user;
+
+          await reload(user);
+
+          const ref = doc(db, "users", user.uid);
+          const snap = await getDoc(ref);
+          let data = snap.exists() ? snap.data() : null;
+
+          const effectiveVerified =
+            user.emailVerified || (data && data.verified === true);
+
+          if (!effectiveVerified) {
+            statusMsg.textContent = "";
+            alert(t.needVerify);
+            return;
+          }
+
+          await setDoc(
+            ref,
+            {
+              verified: true,
+              language:
+                (data && data.language) || currentLang || "zh",
+            },
+            { merge: true }
+          );
+
+          await goNext(user);
+        } catch (err) {
+          console.error(err);
+          const tCurrent = i18n[currentLang] || i18n.zh;
+          statusMsg.textContent = tCurrent.invalid + err.message;
+        }
+      };
+
+      googleLoginBtn.onclick = async () => {
+        const t = i18n[currentLang] || i18n.zh;
+        statusMsg.textContent = t.loggingIn;
+
+        try {
+          const cred = await signInWithPopup(auth, provider);
+          const user = cred.user;
+
+          await ensureUserDoc(user, {
+            verified: true,
           });
-        } else if (!data.verified && emailOk) {
-          await setDoc(userRef, { verified: true }, { merge: true });
+
+          await goNext(user);
+        } catch (err) {
+          console.error(err);
+          const tCurrent = i18n[currentLang] || i18n.zh;
+          statusMsg.textContent = tCurrent.invalid + err.message;
         }
+      };
 
-        setStatus("登入成功，前往主畫面…");
-        snap = await getDoc(userRef);
-        data = snap.data() || {};
-
-        if (data.nickname && data.nickname.trim() !== "") {
-          window.location.href = "home.html";
-        } else {
-          window.location.href = "nickname.html";
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          goNext(user);
         }
-
-      } catch (err) {
-        console.error("Email 登入錯誤：", err);
-        alert("登入失敗：" + err.code);
-        setLoading(false);
-        setStatus("");
-      }
-    };
-
-    // 🅱 Google 登入：一律當 verified = true
-    window.loginWithGoogle = async () => {
-      try {
-        setStatus("使用 Google 登入中…");
-        const provider = new GoogleAuthProvider();
-        const result   = await signInWithPopup(auth, provider);
-        const user     = result.user;
-
-        const userRef = doc(db, "users", user.uid);
-        let snap = await getDoc(userRef);
-        let data = snap.exists() ? snap.data() : null;
-
-        if (!snap.exists()) {
-          await setDoc(userRef, {
-            email: user.email || "",
-            nickname: "",
-            createdAt: new Date().toISOString(),
-            provider: "google",
-            verified: true
-          });
-        } else if (!data.verified) {
-          await setDoc(userRef, { verified: true }, { merge: true });
-        }
-
-        setStatus("登入成功，前往主畫面…");
-        snap = await getDoc(userRef);
-        data = snap.data() || {};
-
-        if (data.nickname && data.nickname.trim() !== "") {
-          window.location.href = "home.html";
-        } else {
-          window.location.href = "nickname.html";
-        }
-
-      } catch (err) {
-        console.error("Google 登入錯誤：", err);
-        alert("Google 登入失敗：" + err.code);
-        setStatus("");
-      }
-    };
-
-    // 忘記密碼
-    window.goReset = () => {
-      window.location.href = "reset.html";
-    };
-
-    // 註冊
-    window.goRegister = () => {
-      window.location.href = "register.html";
-    };
-  </script>
-</head>
-<body>
-  <div class="card">
-    <h2>Moyu Club</h2>
-    <p class="sub">登入後，開始今天的摸魚配對 🐟</p>
-
-    <label for="email">Email</label>
-    <input id="email" type="email" autocomplete="email" />
-
-    <label for="password">密碼</label>
-    <input id="password" type="password" autocomplete="current-password" />
-
-    <button id="btnEmailLogin" class="primary" onclick="loginWithEmail()">
-      以 Email 登入
-    </button>
-
-    <div class="row-links">
-      <span class="link" onclick="goReset()">忘記密碼？</span>
-      <span class="link" onclick="goRegister()">註冊新帳號</span>
-    </div>
-
-    <div class="divider">
-      <span></span><b>或 使用其他方式</b><span></span>
-    </div>
-
-    <button class="google" onclick="loginWithGoogle()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" />
-      使用 Google 登入
-    </button>
-
-    <div id="status"></div>
-  </div>
-</body>
+      });
+    </script>
+  </body>
 </html>

@@ -1,26 +1,30 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <title>Email 驗證</title>
-  <style>
-    body { font-family: Arial; background:#f2f6ff; text-align:center; padding-top:80px;}
-    .box{
-      width:400px;margin:auto;background:#fff;padding:30px;border-radius:12px;
-      box-shadow:0 3px 10px rgba(0,0,0,0.1);
-    }
-    button{padding:10px 16px;margin-top:14px;background:#4a90e2;color:white;
-      border:none;border-radius:8px;cursor:pointer;}
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Moyu Club - 信箱驗證</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/main.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body class="moyu-bg min-h-screen flex items-center justify-center">
+    <div
+      class="w-full max-w-md bg-white/80 backdrop-blur shadow-xl rounded-2xl p-8 border border-blue-50 text-center"
+    >
+      <h2 class="text-xl font-bold text-slate-800 mb-2">
+        請到信箱完成驗證 ✉️
+      </h2>
+      <p class="text-sm text-slate-600 mb-4">
+        我們已寄出驗證信到你的 Email，請點擊郵件中的連結完成驗證。
+        <br />完成後再回來登入，就可以開始摸魚配對！
+      </p>
 
-  <div class="box">
-    <h2>請到你的 Email 收信 📬</h2>
-    <p>你需要點擊信中的「驗證 Email」，才能開始使用 Moyu。</p>
-
-    <button onclick="window.location.href='login.html'">返回登入</button>
-  </div>
-
-</body>
+      <button
+        class="mt-2 inline-flex items-center justify-center rounded-lg bg-blue-600 text-white text-sm font-medium px-4 py-2 hover:bg-blue-700 transition"
+        onclick="window.location.href='login.html'"
+      >
+        回登入頁面
+      </button>
+    </div>
+  </body>
 </html>
