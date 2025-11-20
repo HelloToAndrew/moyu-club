@@ -2,39 +2,90 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <title>重設密碼 | Mōyu Club</title>
+    <title>Mōyu Club - 重設密碼</title>
+
+    <!-- 先載入 Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 再載入 Moyu 全域樣式（深海風格） -->
+    <link rel="stylesheet" href="/css/main.css" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
-  <body>
-    <h2>🔑 重設密碼</h2>
-    <input id="email" type="email" placeholder="請輸入 Email" />
-    <button id="reset">寄送重設信件</button>
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-      import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  <body class="moyu-page flex items-center justify-center">
+    <div class="moyu-card w-full max-w-md">
+      <!-- 標題 + 語言切換 -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="text-left">
+          <h2
+            id="reset-title"
+            class="text-xl font-bold text-slate-900"
+          >
+            Loading...
+          </h2>
+          <p
+            id="reset-subtitle"
+            class="mt-1 text-xs text-slate-500"
+          >
+            ...
+          </p>
+        </div>
+        <div class="flex items-center gap-1 text-[11px]">
+          <button
+            id="langZh"
+            class="moyu-btn moyu-btn-secondary px-3 py-1 text-[11px]"
+          >
+            中文
+          </button>
+          <button
+            id="langEn"
+            class="moyu-btn moyu-btn-secondary px-3 py-1 text-[11px]"
+          >
+            EN
+          </button>
+        </div>
+      </div>
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
-        authDomain: "moyu-club.firebaseapp.com",
-        projectId: "moyu-club",
-        storageBucket: "moyu-club.firebasestorage.app",
-        messagingSenderId: "178708686787",
-        appId: "1:178708686787:web:be7c38dfe3d29a6695bf76"
-      };
+      <div class="space-y-3">
+        <div>
+          <label
+            id="reset-email-label"
+            for="reset-email"
+            class="block text-sm font-medium text-slate-700 mb-1"
+          >
+            Email
+          </label>
+          <input
+            id="reset-email"
+            type="email"
+            autocomplete="email"
+            class="moyu-input text-sm"
+            placeholder="your@email.com"
+          />
+        </div>
 
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
+        <button
+          id="reset-btn"
+          class="mt-2 w-full moyu-btn moyu-btn-primary text-sm font-medium"
+        >
+          寄送重設密碼信
+        </button>
 
-      document.getElementById("reset").onclick = async () => {
-        const email = document.getElementById("email").value;
-        if (!email) return alert("請輸入 Email");
-        try {
-          await sendPasswordResetEmail(auth, email);
-          alert("已寄出重設密碼信件！");
-        } catch (e) {
-          alert("錯誤：" + e.message);
-        }
-      };
-    </script>
+        <p
+          id="reset-status"
+          class="mt-3 text-center text-xs text-slate-500 min-h-[1rem]"
+        ></p>
+
+        <button
+          id="reset-back-login"
+          class="mt-2 w-full text-xs text-slate-500 hover:underline"
+        >
+          返回登入頁
+        </button>
+      </div>
+    </div>
+
+    <!-- JS 全部外掛到 reset.js -->
+    <script type="module" src="./reset.js"></script>
   </body>
 </html>

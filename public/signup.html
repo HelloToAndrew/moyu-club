@@ -2,28 +2,53 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <title>Moyu Club - 註冊</title>
+    <title>Mōyu Club - 註冊</title>
 
+    <!-- 先載入 Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 再載入 Moyu 全域樣式 -->
     <link rel="stylesheet" href="/css/main.css" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
-  <body class="moyu-bg min-h-screen flex items-center justify-center">
-    <div
-      class="w-full max-w-md bg-white/80 backdrop-blur shadow-xl rounded-2xl p-8 border border-blue-50"
-    >
-      <div class="mb-6 text-center">
-        <h2 class="text-xl font-bold text-slate-800">
-          註冊 Moyu Club 帳號 🐠
-        </h2>
-        <p class="mt-1 text-xs text-slate-500">
-          完成信箱驗證後，就能開始摸魚配對
-        </p>
+  <body class="moyu-page flex items-center justify-center">
+    <div class="moyu-card w-full max-w-md">
+      <!-- 標題 + 語言切換 -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="text-left">
+          <h2
+            id="signup-title"
+            class="text-xl font-bold text-slate-900"
+          >
+            Loading...
+          </h2>
+          <p
+            id="signup-subtitle"
+            class="mt-1 text-xs text-slate-500"
+          >
+            ...
+          </p>
+        </div>
+        <div class="flex items-center gap-1 text-[11px]">
+          <button
+            id="langZh"
+            class="moyu-btn moyu-btn-secondary px-3 py-1 text-[11px]"
+          >
+            中文
+          </button>
+          <button
+            id="langEn"
+            class="moyu-btn moyu-btn-secondary px-3 py-1 text-[11px]"
+          >
+            EN
+          </button>
+        </div>
       </div>
 
       <div class="space-y-3">
         <div>
           <label
+            id="signup-email-label"
             for="email"
             class="block text-sm font-medium text-slate-700 mb-1"
             >Email</label
@@ -32,27 +57,29 @@
             id="email"
             type="email"
             autocomplete="email"
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            class="moyu-input text-sm"
             placeholder="your@email.com"
           />
         </div>
 
         <div>
           <label
+            id="signup-pw-label"
             for="pw"
             class="block text-sm font-medium text-slate-700 mb-1"
-            >密碼（至少 6 字）</label
+            >密碼</label
           >
           <input
             id="pw"
             type="password"
             autocomplete="new-password"
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            class="moyu-input text-sm"
           />
         </div>
 
         <div>
           <label
+            id="signup-pw2-label"
             for="pw2"
             class="block text-sm font-medium text-slate-700 mb-1"
             >再次輸入密碼</label
@@ -61,13 +88,13 @@
             id="pw2"
             type="password"
             autocomplete="new-password"
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            class="moyu-input text-sm"
           />
         </div>
 
         <button
           id="btn-signup"
-          class="mt-2 w-full inline-flex items-center justify-center rounded-lg bg-blue-600 text-white text-sm font-medium py-2.5 hover:bg-blue-700 transition"
+          class="mt-2 w-full moyu-btn moyu-btn-primary text-sm font-medium"
         >
           建立帳號並寄出驗證信
         </button>
@@ -78,94 +105,15 @@
         ></p>
 
         <button
-          class="mt-2 w-full text-xs text-blue-600 hover:underline"
-          onclick="window.location.href='login.html'"
+          id="signup-back-login"
+          class="mt-2 w-full text-xs text-slate-500 hover:underline"
         >
           已有帳號？返回登入
         </button>
       </div>
     </div>
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-      import {
-        getAuth,
-        createUserWithEmailAndPassword,
-        sendEmailVerification,
-      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-      import {
-        getFirestore,
-        doc,
-        setDoc,
-      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
-        authDomain: "moyu-club.firebaseapp.com",
-        projectId: "moyu-club",
-        storageBucket: "moyu-club.firebasestorage.app",
-        messagingSenderId: "178708686787",
-        appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
-        measurementId: "G-GPV3CMCZ0T",
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth();
-      const db = getFirestore();
-
-      const statusEl = document.getElementById("signup-status");
-
-      function setStatus(msg, isError = false) {
-        statusEl.textContent = msg;
-        statusEl.className =
-          "mt-3 text-center text-xs " +
-          (isError ? "text-red-500" : "text-slate-500");
-      }
-
-      document
-        .getElementById("btn-signup")
-        .addEventListener("click", async () => {
-          const email = document.getElementById("email").value.trim();
-          const pw = document.getElementById("pw").value.trim();
-          const pw2 = document.getElementById("pw2").value.trim();
-
-          if (!email || !pw || !pw2) {
-            setStatus("請填寫所有欄位", true);
-            return;
-          }
-          if (pw !== pw2) {
-            setStatus("兩次密碼不一致", true);
-            return;
-          }
-          if (pw.length < 6) {
-            setStatus("密碼至少需 6 字", true);
-            return;
-          }
-
-          try {
-            setStatus("建立帳號中...");
-            const cred = await createUserWithEmailAndPassword(
-              auth,
-              email,
-              pw
-            );
-            const user = cred.user;
-
-            await setDoc(doc(db, "users", user.uid), {
-              email,
-              nickname: "",
-              createdAt: new Date().toISOString(),
-              verified: false,
-            });
-
-            await sendEmailVerification(user);
-
-            setStatus("註冊成功！請到 Email 收信完成驗證再登入。");
-          } catch (err) {
-            console.error(err);
-            setStatus("註冊失敗：" + err.message, true);
-          }
-        });
-    </script>
+    <!-- 把邏輯全部放到 signup.js -->
+    <script type="module" src="./signup.js"></script>
   </body>
 </html>

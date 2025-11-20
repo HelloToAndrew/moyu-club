@@ -2,34 +2,48 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <title>Mōyu Club - 登入</title>
+    <title>Mōyu Club - Login</title>
+
+    <!-- 先載入 Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 再載入自訂的 Moyu CSS -->
+    <link rel="stylesheet" href="./css/main.css" />
+
+    <!-- 登入邏輯 -->
+    <script type="module" src="./login.js"></script>
   </head>
-  <body class="bg-slate-100 min-h-screen flex items-center justify-center">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
-      <!-- 頂部：標題 + 語言切換 -->
+
+  <body class="moyu-page flex items-center justify-center">
+    <div class="moyu-card w-full max-w-md">
+      <!-- 標題 + 語言切換 -->
       <div class="flex items-center justify-between mb-4">
-        <h1 id="titleText" class="text-xl font-bold text-slate-800">
-          歡迎來到 Mōyu Club
+        <h1
+          id="titleText"
+          class="text-xl font-bold text-slate-900"
+        >
+          Loading...
         </h1>
         <div class="flex items-center gap-1 text-[11px]">
           <button
             id="langZh"
-            class="px-2 py-1 rounded-full border border-slate-200 text-slate-600"
+            class="moyu-btn moyu-btn-secondary px-3 py-1 text-[11px]"
           >
             中文
           </button>
           <button
             id="langEn"
-            class="px-2 py-1 rounded-full border border-transparent text-slate-400"
+            class="moyu-btn moyu-btn-secondary px-3 py-1 text-[11px]"
           >
             EN
           </button>
         </div>
       </div>
 
-      <p id="subtitleText" class="text-xs text-slate-500 mb-4">
-        登入後，系統會幫你找到今天的摸魚夥伴。
+      <p
+        id="subtitleText"
+        class="moyu-subtitle"
+      >
+        Loading...
       </p>
 
       <!-- Email 登入 -->
@@ -42,66 +56,63 @@
         <input
           id="emailInput"
           type="email"
-          class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+          class="moyu-input"
         />
 
         <label
           id="passwordLabel"
           class="block text-xs font-medium text-slate-500 mt-2"
-          >密碼</label
+          >Password</label
         >
         <input
           id="passwordInput"
           type="password"
-          class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+          class="moyu-input"
         />
 
         <button
           id="emailLoginBtn"
-          class="mt-3 w-full py-2 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600"
+          class="mt-3 w-full moyu-btn moyu-btn-primary text-sm font-semibold"
         >
-          使用 Email 登入
+          Sign in
         </button>
 
-        <!-- 忘記密碼 / 註冊新帳號 -->
-        <div class="mt-2 flex items-center justify-between text-[11px]">
+        <div
+          class="mt-2 flex items-center justify-between text-[11px]"
+        >
           <button
             id="forgotBtn"
             class="text-emerald-600 hover:underline"
             onclick="window.location.href='reset.html'"
-          >
-            忘記密碼？
-          </button>
+          ></button>
           <button
             id="signupBtn"
             class="text-slate-500 hover:underline"
             onclick="window.location.href='signup.html'"
-          >
-            註冊新帳號
-          </button>
+          ></button>
         </div>
       </div>
 
       <!-- 分隔線 -->
       <div class="flex items-center my-4">
         <div class="flex-1 h-px bg-slate-200"></div>
-        <span id="orText" class="px-2 text-[11px] text-slate-400"
-          >或 使用 Google 登入</span
-        >
+        <span
+          id="orText"
+          class="px-2 text-[11px] text-slate-400"
+        ></span>
         <div class="flex-1 h-px bg-slate-200"></div>
       </div>
 
-      <!-- ✅ Google 登入：加回 Google icon -->
+      <!-- Google 登入 -->
       <button
         id="googleLoginBtn"
-        class="w-full py-2 rounded-xl border border-slate-200 text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2"
+        class="w-full moyu-btn moyu-btn-secondary text-sm text-slate-700 flex items-center justify-center gap-2"
       >
         <img
           src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-          alt="Google"
           class="w-4 h-4"
         />
-        <span id="googleBtnText">使用 Google 帳號登入</span>
+        <span id="googleBtnText"></span>
       </button>
 
       <!-- 狀態訊息 -->
@@ -110,260 +121,5 @@
         class="mt-3 text-center text-[11px] text-slate-400"
       ></p>
     </div>
-
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-      import {
-        getAuth,
-        signInWithEmailAndPassword,
-        signInWithPopup,
-        GoogleAuthProvider,
-        onAuthStateChanged,
-        reload,
-      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-      import {
-        getFirestore,
-        doc,
-        getDoc,
-        setDoc,
-      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-
-      const i18n = {
-        zh: {
-          pageTitle: "Mōyu Club - 登入",
-          title: "歡迎來到 Mōyu Club",
-          subtitle: "登入後，系統會幫你找到今天的摸魚夥伴。",
-          emailLabel: "Email",
-          passwordLabel: "密碼",
-          emailLoginBtn: "使用 Email 登入",
-          forgot: "忘記密碼？",
-          signup: "註冊新帳號",
-          orText: "或 使用 Google 登入",
-          googleBtn: "使用 Google 帳號登入",
-          loggingIn: "登入中，請稍候…",
-          invalid: "登入失敗：",
-          needVerify:
-            "Email 尚未驗證，請先到信箱點擊驗證連結再重新登入。",
-          loadingUser: "載入使用者資料中…",
-        },
-        en: {
-          pageTitle: "Mōyu Club - Login",
-          title: "Welcome to Mōyu Club",
-          subtitle:
-            "Sign in and we'll find today's slacking partner for you.",
-          emailLabel: "Email",
-          passwordLabel: "Password",
-          emailLoginBtn: "Sign in with Email",
-          forgot: "Forgot password?",
-          signup: "Create a new account",
-          orText: "or Sign in with Google",
-          googleBtn: "Sign in with Google",
-          loggingIn: "Signing in, please wait…",
-          invalid: "Login failed: ",
-          needVerify:
-            "Email is not verified yet. Please check your inbox and click the verification link.",
-          loadingUser: "Loading user profile…",
-        },
-      };
-
-      function applyLang(lang) {
-        const t = i18n[lang] || i18n.zh;
-        document.title = t.pageTitle;
-        document.getElementById("titleText").textContent = t.title;
-        document.getElementById("subtitleText").textContent = t.subtitle;
-        document.getElementById("emailLabel").textContent = t.emailLabel;
-        document.getElementById("passwordLabel").textContent =
-          t.passwordLabel;
-        document.getElementById("emailLoginBtn").textContent =
-          t.emailLoginBtn;
-        document.getElementById("forgotBtn").textContent = t.forgot;
-        document.getElementById("signupBtn").textContent = t.signup;
-        document.getElementById("orText").textContent = t.orText;
-        document.getElementById("googleBtnText").textContent = t.googleBtn;
-      }
-
-      function updateLangButtons(lang) {
-        const zhBtn = document.getElementById("langZh");
-        const enBtn = document.getElementById("langEn");
-        if (lang === "en") {
-          enBtn.classList.add("border-slate-200", "text-slate-600");
-          enBtn.classList.remove("text-slate-400");
-          zhBtn.classList.remove("border-slate-200", "text-slate-600");
-          zhBtn.classList.add("text-slate-400");
-        } else {
-          zhBtn.classList.add("border-slate-200", "text-slate-600");
-          zhBtn.classList.remove("text-slate-400");
-          enBtn.classList.remove("border-slate-200", "text-slate-600");
-          enBtn.classList.add("text-slate-400");
-        }
-      }
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
-        authDomain: "moyu-club.firebaseapp.com",
-        projectId: "moyu-club",
-        storageBucket: "moyu-club.firebasestorage.app",
-        messagingSenderId: "178708686787",
-        appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
-        measurementId: "G-GPV3CMCZ0T",
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth();
-      const db = getFirestore();
-      const provider = new GoogleAuthProvider();
-
-      let currentLang = localStorage.getItem("moyu_lang") || "zh";
-      applyLang(currentLang);
-      updateLangButtons(currentLang);
-
-      document.getElementById("langZh").onclick = () => {
-        currentLang = "zh";
-        localStorage.setItem("moyu_lang", currentLang);
-        applyLang(currentLang);
-        updateLangButtons(currentLang);
-      };
-      document.getElementById("langEn").onclick = () => {
-        currentLang = "en";
-        localStorage.setItem("moyu_lang", currentLang);
-        applyLang(currentLang);
-        updateLangButtons(currentLang);
-      };
-
-      const emailInput = document.getElementById("emailInput");
-      const passwordInput = document.getElementById("passwordInput");
-      const emailLoginBtn = document.getElementById("emailLoginBtn");
-      const googleLoginBtn = document.getElementById("googleLoginBtn");
-      const statusMsg = document.getElementById("statusMsg");
-
-      async function ensureUserDoc(user, extra = {}) {
-        const uid = user.uid;
-        const ref = doc(db, "users", uid);
-        const snap = await getDoc(ref);
-
-        const baseData = {
-          email: user.email || "",
-          nickname: "",
-          language: currentLang,
-          createdAt: new Date().toISOString(),
-          verified: user.emailVerified || false,
-          ...extra,
-        };
-
-        if (!snap.exists()) {
-          await setDoc(ref, baseData);
-          return baseData;
-        } else {
-          const data = snap.data();
-          const merged = {
-            ...data,
-            language: data.language || currentLang,
-            verified:
-              typeof data.verified === "boolean"
-                ? data.verified || user.emailVerified
-                : user.emailVerified,
-          };
-          await setDoc(ref, merged, { merge: true });
-          return merged;
-        }
-      }
-
-      async function goNext(user) {
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
-
-        let data;
-        if (!snap.exists()) {
-          data = await ensureUserDoc(user);
-        } else {
-          data = snap.data();
-        }
-
-        localStorage.setItem("moyu_uid", user.uid);
-        localStorage.setItem("moyu_nickname", data.nickname || "");
-        localStorage.setItem("moyu_lang", data.language || currentLang);
-
-        if (!data.nickname) {
-          window.location.href = "nickname.html";
-        } else {
-          window.location.href = "home.html";
-        }
-      }
-
-      emailLoginBtn.onclick = async () => {
-        const t = i18n[currentLang] || i18n.zh;
-        statusMsg.textContent = t.loggingIn;
-
-        const email = emailInput.value.trim();
-        const pw = passwordInput.value.trim();
-        if (!email || !pw) {
-          statusMsg.textContent = "";
-          alert("請輸入 Email 與密碼");
-          return;
-        }
-
-        try {
-          const cred = await signInWithEmailAndPassword(auth, email, pw);
-          const user = cred.user;
-
-          await reload(user);
-
-          const ref = doc(db, "users", user.uid);
-          const snap = await getDoc(ref);
-          let data = snap.exists() ? snap.data() : null;
-
-          const effectiveVerified =
-            user.emailVerified || (data && data.verified === true);
-
-          if (!effectiveVerified) {
-            statusMsg.textContent = "";
-            alert(t.needVerify);
-            return;
-          }
-
-          await setDoc(
-            ref,
-            {
-              verified: true,
-              language:
-                (data && data.language) || currentLang || "zh",
-            },
-            { merge: true }
-          );
-
-          await goNext(user);
-        } catch (err) {
-          console.error(err);
-          const tCurrent = i18n[currentLang] || i18n.zh;
-          statusMsg.textContent = tCurrent.invalid + err.message;
-        }
-      };
-
-      googleLoginBtn.onclick = async () => {
-        const t = i18n[currentLang] || i18n.zh;
-        statusMsg.textContent = t.loggingIn;
-
-        try {
-          const cred = await signInWithPopup(auth, provider);
-          const user = cred.user;
-
-          await ensureUserDoc(user, {
-            verified: true,
-          });
-
-          await goNext(user);
-        } catch (err) {
-          console.error(err);
-          const tCurrent = i18n[currentLang] || i18n.zh;
-          statusMsg.textContent = tCurrent.invalid + err.message;
-        }
-      };
-
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          goNext(user);
-        }
-      });
-    </script>
   </body>
 </html>

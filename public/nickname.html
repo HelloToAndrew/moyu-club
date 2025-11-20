@@ -2,189 +2,61 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <title>Mōyu Club - 設定暱稱</title>
+    <title>Mōyu Club - Nickname</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/main.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body class="bg-slate-100 min-h-screen flex items-center justify-center">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
+    <div
+      class="w-full max-w-md bg-white rounded-2xl shadow-sm p-6 border border-slate-100"
+    >
       <h1
-        id="titleText"
+        id="nickname-title"
         class="text-xl font-bold text-slate-800 mb-2 text-center"
       >
-        幫你的魚取個名字
+        <!-- i18n 注入 -->
       </h1>
+
       <p
-        id="subtitleText"
+        id="nickname-subtitle"
         class="text-xs text-slate-500 mb-4 text-center"
       >
-        這個暱稱會出現在配對成功提醒與聊天室中，之後可以在帳戶設定裡修改。
+        <!-- i18n 注入 -->
       </p>
 
       <label
-        id="nicknameLabel"
+        id="nickname-label"
         class="block text-xs font-medium text-slate-500 mb-1"
-        >聊天顯示暱稱</label
+        ><!-- i18n --></label
       >
       <input
-        id="nicknameInput"
+        id="nickname-input"
         type="text"
-        placeholder="例如：泡泡魚、加班鯖魚"
         class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
       />
 
-      <p id="hintText" class="mt-1 text-[11px] text-slate-400">
-        暱稱不能為空白，之後可以從帳戶設定頁修改。
+      <p
+        id="nickname-hint"
+        class="mt-1 text-[11px] text-slate-400"
+      >
+        <!-- i18n 注入 -->
       </p>
 
       <button
-        id="saveBtn"
+        id="nickname-save-btn"
         class="mt-4 w-full py-2 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600"
       >
-        開始摸魚
+        <!-- i18n 注入 -->
       </button>
 
       <p
-        id="statusMsg"
+        id="nickname-status"
         class="mt-3 text-center text-[11px] text-slate-400"
       ></p>
     </div>
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-      import {
-        getAuth,
-        onAuthStateChanged,
-      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-      import {
-        getFirestore,
-        doc,
-        getDoc,
-        setDoc,
-      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-
-      const i18n = {
-        zh: {
-          pageTitle: "Mōyu Club - 設定暱稱",
-          title: "幫你的魚取個名字",
-          subtitle:
-            "這個暱稱會出現在配對成功提醒與聊天室中，之後可以在帳戶設定裡修改。",
-          label: "聊天顯示暱稱",
-          placeholder: "例如：泡泡魚、加班鯖魚",
-          hint: "暱稱不能為空白，之後可以從帳戶設定頁修改。",
-          saveBtn: "開始摸魚",
-          saving: "儲存中，請稍候…",
-          saved: "暱稱已儲存，準備進入主畫面。",
-          empty: "暱稱不能為空白。",
-          error: "儲存失敗：",
-        },
-        en: {
-          pageTitle: "Mōyu Club - Nickname",
-          title: "Give your fish a name",
-          subtitle:
-            "This nickname appears in match notifications and chats. You can change it later in Account Settings.",
-          label: "Display nickname",
-          placeholder: "e.g. Bubble Fish, Overtime Mackerel",
-          hint: "Nickname cannot be empty. You can change it later.",
-          saveBtn: "Start slacking",
-          saving: "Saving, please wait…",
-          saved: "Nickname saved. Redirecting to home.",
-          empty: "Nickname cannot be empty.",
-          error: "Save failed: ",
-        },
-      };
-
-      function applyLang(lang) {
-        const t = i18n[lang] || i18n.zh;
-        document.title = t.pageTitle;
-        document.getElementById("titleText").textContent = t.title;
-        document.getElementById("subtitleText").textContent = t.subtitle;
-        document.getElementById("nicknameLabel").textContent = t.label;
-        document.getElementById("nicknameInput").placeholder =
-          t.placeholder;
-        document.getElementById("hintText").textContent = t.hint;
-        document.getElementById("saveBtn").textContent = t.saveBtn;
-      }
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
-        authDomain: "moyu-club.firebaseapp.com",
-        projectId: "moyu-club",
-        storageBucket: "moyu-club.firebasestorage.app",
-        messagingSenderId: "178708686787",
-        appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
-        measurementId: "G-GPV3CMCZ0T",
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth();
-      const db = getFirestore();
-
-      const nicknameInput = document.getElementById("nicknameInput");
-      const saveBtn = document.getElementById("saveBtn");
-      const statusMsg = document.getElementById("statusMsg");
-
-      let currentUser = null;
-      let currentLang = localStorage.getItem("moyu_lang") || "zh";
-
-      applyLang(currentLang);
-
-      onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-          window.location.href = "login.html";
-          return;
-        }
-        currentUser = user;
-
-        try {
-          const ref = doc(db, "users", user.uid);
-          const snap = await getDoc(ref);
-
-          if (snap.exists()) {
-            const data = snap.data();
-            if (data.language) {
-              currentLang = data.language;
-              localStorage.setItem("moyu_lang", currentLang);
-              applyLang(currentLang);
-            }
-            if (data.nickname) {
-              nicknameInput.value = data.nickname;
-            }
-          }
-        } catch (err) {
-          console.error("載入暱稱失敗：", err);
-        }
-      });
-
-      saveBtn.addEventListener("click", async () => {
-        const t = i18n[currentLang] || i18n.zh;
-        const nickname = nicknameInput.value.trim();
-        if (!nickname) {
-          alert(t.empty);
-          return;
-        }
-
-        statusMsg.textContent = t.saving;
-
-        try {
-          const uid = currentUser.uid;
-          await setDoc(
-            doc(db, "users", uid),
-            {
-              nickname,
-              language: currentLang,
-            },
-            { merge: true }
-          );
-          localStorage.setItem("moyu_nickname", nickname);
-          localStorage.setItem("moyu_lang", currentLang);
-
-          statusMsg.textContent = t.saved;
-          window.location.href = "home.html";
-        } catch (err) {
-          console.error(err);
-          statusMsg.textContent = t.error + err.message;
-        }
-      });
-    </script>
+    <!-- 所有邏輯丟到 nickname.js -->
+    <script type="module" src="./nickname.js"></script>
   </body>
 </html>

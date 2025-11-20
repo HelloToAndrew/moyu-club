@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <title>Mōyu Club - 主畫面</title>
 
-    <!-- Tailwind CDN（開發用） -->
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- socket.io 客戶端 -->
@@ -13,13 +13,13 @@
 
   <body class="bg-slate-900 text-slate-100 min-h-screen">
     <div class="max-w-5xl mx-auto px-4 py-6">
-      <!-- 上方列：LOGO + 暱稱 + 登出 -->
+      <!-- 上方列：LOGO + 暱稱 + 設定 -->
       <header class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-semibold tracking-tight">
+          <h1 id="app-title" class="text-2xl font-semibold tracking-tight">
             Mōyu Club 🐟
           </h1>
-          <p class="text-slate-400 text-sm">
+          <p id="app-subtitle" class="text-slate-400 text-sm">
             只讓真正懂「魚的快樂」的人，遇見彼此。
           </p>
         </div>
@@ -27,20 +27,21 @@
         <div class="flex items-center gap-3">
           <div class="text-right">
             <div class="text-sm text-slate-400">
-              嗨，
-              <span id="nickname-text" class="font-semibold text-emerald-300"
+              <span id="hi-label">嗨，</span>
+              <span
+                id="nickname-text"
+                class="font-semibold text-emerald-300"
                 >...</span
               >
             </div>
-            <div id="lang-text" class="text-xs text-slate-500">
-              語言：依帳戶設定
-            </div>
           </div>
           <button
-            id="logout-btn"
-            class="text-xs px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700"
+            id="settings-btn"
+            onclick="window.location.href='settings.html'"
+            class="text-xs px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1"
           >
-            登出
+            <span>⚙️</span>
+            <span id="settings-label">設定</span>
           </button>
         </div>
       </header>
@@ -50,11 +51,14 @@
         <section class="space-y-4">
           <!-- 狀態卡片 -->
           <div class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700">
-            <h2 class="text-sm font-semibold text-slate-200 mb-2">
+            <h2
+              id="status-section-title"
+              class="text-sm font-semibold text-slate-200 mb-2"
+            >
               目前狀態
             </h2>
             <p id="status-text" class="text-sm text-slate-300">
-              正在載入使用者資訊...
+              正在檢查登入狀態...
             </p>
           </div>
 
@@ -63,12 +67,14 @@
             id="match-panel"
             class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700"
           >
-            <h2 class="text-sm font-semibold text-slate-200 mb-2">
+            <h2
+              id="match-section-title"
+              class="text-sm font-semibold text-slate-200 mb-2"
+            >
               隨機摸魚配對
             </h2>
-            <p class="text-xs text-slate-400 mb-3">
-              按下開始之後，我們會幫你找一隻同樣想偷懶的魚。配對成功後有 5
-              秒時間可以聊天，再決定要不要保留這段緣分。
+            <p id="match-desc" class="text-xs text-slate-400 mb-3">
+              按下開始之後，我們會幫你找一隻同樣想偷懶的魚。配對成功後有 5 秒時間可以聊天，再決定要不要保留這段緣分。
             </p>
             <button
               id="start-match-btn"
@@ -84,17 +90,20 @@
 
           <!-- 已保留緣分卡片 -->
           <div class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700">
-            <h2 class="text-sm font-semibold text-slate-200 mb-1">
+            <h2
+              id="saved-section-title"
+              class="text-sm font-semibold text-slate-200 mb-1"
+            >
               已保留的摸魚緣分
             </h2>
-            <p class="text-xs text-slate-400 mb-3">
+            <p id="saved-desc" class="text-xs text-slate-400 mb-3">
               當雙方都按下「保留這段緣分」時，你們會出現在這裡。點一下就能再次偷閒聊天。
             </p>
             <div
               id="saved-list"
               class="space-y-2 max-h-60 overflow-y-auto text-sm"
             >
-              <div class="text-slate-500 text-xs">
+              <div id="saved-empty-text" class="text-slate-500 text-xs">
                 目前還沒有保留的對話。
               </div>
             </div>
@@ -102,15 +111,18 @@
         </section>
 
         <!-- 右側：聊天室 -->
-        <section>
+        <section class="flex flex-col">
           <div
             id="chat-card"
-            class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700 hidden flex flex-col h-full"
+            class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700 hidden flex flex-col max-h-[520px]"
           >
             <!-- 聊天室標題列 -->
             <div class="flex items-center justify-between mb-3">
               <div>
-                <div class="text-xs text-slate-400 uppercase tracking-wide">
+                <div
+                  id="chatroom-label"
+                  class="text-xs text-slate-400 uppercase tracking-wide"
+                >
                   摸魚配對聊天室
                 </div>
                 <div
@@ -137,12 +149,15 @@
               </div>
             </div>
 
-            <!-- 聊天訊息區 -->
+            <!-- 聊天訊息區（高度固定＋卷軸） -->
             <div
               id="messages"
-              class="flex-1 bg-slate-900/60 rounded-xl p-3 text-sm space-y-2 overflow-y-auto"
+              class="chat-messages bg-slate-900/60 rounded-xl p-3 text-sm space-y-2 overflow-y-auto flex-1"
             >
-              <div class="text-xs text-slate-500 text-center">
+              <div
+                id="chat-placeholder"
+                class="text-xs text-slate-500 text-center"
+              >
                 配對成功後，這裡會出現你們的對話。
               </div>
             </div>
@@ -170,7 +185,7 @@
               id="keep-actions"
               class="mt-3 pt-3 border-t border-slate-700 hidden"
             >
-              <div class="text-xs text-slate-400 mb-2">
+              <div id="keep-question" class="text-xs text-slate-400 mb-2">
                 時間到了，要保留這段摸魚緣分嗎？
               </div>
               <div class="flex items-center gap-2">
@@ -197,609 +212,10 @@
       </main>
     </div>
 
-    <!-- Firebase + 主邏輯 -->
-    <script type="module">
-      // --- Firebase imports ---
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-      import {
-        getAuth,
-        onAuthStateChanged,
-        signOut,
-      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-      import {
-        getFirestore,
-        doc,
-        getDoc,
-        setDoc,
-        collection,
-        getDocs,
-      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-
-      // --- Firebase config（跟你其他頁面一樣） ---
-      const firebaseConfig = {
-        apiKey: "AIzaSyB4oaUyo3RWJnnLLN3CkiiJ8wimp_43kko",
-        authDomain: "moyu-club.firebaseapp.com",
-        projectId: "moyu-club",
-        storageBucket: "moyu-club.firebasestorage.app",
-        messagingSenderId: "178708686787",
-        appId: "1:178708686787:web:be7c38dfe3d29a6695bf76",
-        measurementId: "G-GPV3CMCZ0T",
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
-
-      // --- DOM 快速取用 ---
-      const nicknameText = document.getElementById("nickname-text");
-      const langText = document.getElementById("lang-text");
-      const statusText = document.getElementById("status-text");
-      const matchPanel = document.getElementById("match-panel");
-      const matchHint = document.getElementById("match-hint");
-      const startMatchBtn = document.getElementById("start-match-btn");
-
-      const chatCard = document.getElementById("chat-card");
-      const chatTitle = document.getElementById("chat-title");
-      const messagesEl = document.getElementById("messages");
-      const countdownWrap = document.getElementById("countdown-wrap");
-      const countdownEl = document.getElementById("countdown");
-      const chatInput = document.getElementById("chat-input");
-      const sendBtn = document.getElementById("send-btn");
-      const forceEndBtn = document.getElementById("force-end-btn");
-
-      const keepActions = document.getElementById("keep-actions");
-      const keepBtn = document.getElementById("keep-btn");
-      const endBtn = document.getElementById("end-btn");
-      const keepHint = document.getElementById("keep-hint");
-      const savedListEl = document.getElementById("saved-list");
-      const logoutBtn = document.getElementById("logout-btn");
-
-      // --- 狀態變數 ---
-      let socket = null;
-      let currentUser = null;
-      let currentUid = null;
-      let currentNickname = "";
-      let currentLang = localStorage.getItem("moyuLang") || "zh";
-
-      let chatMode = null; // "random" or "saved"
-      let chatLocked = false;
-      let countdownTimer = null;
-      let countdownRemaining = 5; // 測試用 5 秒
-
-      let currentPartnerUid = null;
-      let currentPartnerNickname = null;
-      let currentRoomId = null;
-
-      // --- 簡單 i18n（先保留基礎，之後可擴充） ---
-      const i18n = {
-        zh: {
-          startMatching: "開始摸魚配對",
-          matching: "🎣 正在尋找另一隻魚...",
-          idle: "你現在可以開始摸魚配對。",
-          chatTitleRandom: (name) => `正在和 ${name} 聊天`,
-          chatTitleSaved: (name) => `已保留緣分：${name}`,
-          chatEnded: "對話已結束，可以重新配對或找已保留緣分。",
-          timeUp: "時間到了，請選擇是否要保留這段緣分。",
-          keepSuccess: "這段緣分已被保留，可以繼續聊天 ✨",
-          partnerWantsKeep: "對方想保留這段緣分，如果你也按下，就會一起被收藏。",
-        },
-        en: {
-          startMatching: "Start random match",
-          matching: "🎣 Searching for another fish...",
-          idle: "You can start a new match now.",
-          chatTitleRandom: (name) => `Chatting with ${name}`,
-          chatTitleSaved: (name) => `Saved connection: ${name}`,
-          chatEnded: "Chat ended. You can start a new match or open a saved one.",
-          timeUp: "Time's up. Decide whether to keep this connection.",
-          keepSuccess: "Connection saved. You can keep chatting ✨",
-          partnerWantsKeep:
-            "Your partner wants to keep this connection. Tap keep to save it too.",
-        },
-      };
-
-      function t(key, ...args) {
-        const pack = i18n[currentLang] || i18n["zh"];
-        const val = pack[key];
-        if (typeof val === "function") return val(...args);
-        return val ?? key;
-      }
-
-      function applyLangTexts() {
-        startMatchBtn.textContent = t("startMatching");
-        langText.textContent =
-          currentLang === "en" ? "Language: English" : "語言：中文（依帳戶設定）";
-      }
-
-      // --- UI helper functions ---
-
-      function setStatus(msg) {
-        statusText.textContent = msg;
-      }
-
-      function showMatchPanel() {
-        matchPanel.classList.remove("opacity-50", "pointer-events-none");
-        startMatchBtn.disabled = false;
-      }
-
-      function disableMatchPanelWhileChat() {
-        matchPanel.classList.add("opacity-50", "pointer-events-none");
-        startMatchBtn.disabled = true;
-      }
-
-      function showChatCard() {
-        chatCard.classList.remove("hidden");
-      }
-
-      function hideChatCard() {
-        chatCard.classList.add("hidden");
-      }
-
-      function showCountdown() {
-        countdownWrap.classList.remove("hidden");
-      }
-
-      function hideCountdown() {
-        countdownWrap.classList.add("hidden");
-      }
-
-      function updateCountdownUI() {
-        if (!countdownEl) return;
-        countdownEl.textContent = `${countdownRemaining}s`;
-      }
-
-      function startCountdown() {
-        stopCountdown();
-        countdownRemaining = 5; // 之後要改成 300 秒只要這裡調整
-        chatLocked = false;
-        showCountdown();
-        updateCountdownUI();
-
-        countdownTimer = setInterval(() => {
-          countdownRemaining -= 1;
-          if (countdownRemaining <= 0) {
-            stopCountdown();
-            chatLocked = true;
-            hideCountdown();
-            showKeepActions();
-            appendSystemMessage(t("timeUp"));
-          } else {
-            updateCountdownUI();
-          }
-        }, 1000);
-      }
-
-      function stopCountdown() {
-        if (countdownTimer) {
-          clearInterval(countdownTimer);
-          countdownTimer = null;
-        }
-      }
-
-      function showKeepActions() {
-        keepActions.classList.remove("hidden");
-        keepHint.textContent = "";
-      }
-
-      function hideKeepActions() {
-        keepActions.classList.add("hidden");
-        keepHint.textContent = "";
-      }
-
-      function clearMessages() {
-        messagesEl.innerHTML = "";
-      }
-
-      function appendSystemMessage(text) {
-        const div = document.createElement("div");
-        div.className = "text-center text-[11px] text-slate-400 my-1";
-        div.textContent = text;
-        messagesEl.appendChild(div);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      }
-
-      function appendChatMessage(text, isMe, fromName) {
-        if (!text) return;
-
-        const wrap = document.createElement("div");
-        wrap.className = `flex ${isMe ? "justify-end" : "justify-start"}`;
-
-        const bubble = document.createElement("div");
-        bubble.className = `px-3 py-2 rounded-lg max-w-xs break-words shadow ${
-          isMe
-            ? "bg-emerald-500 text-slate-900"
-            : "bg-slate-700 text-slate-100"
-        }`;
-
-        if (!isMe) {
-          const nameSpan = document.createElement("div");
-          nameSpan.className = "text-[11px] text-slate-300 mb-0.5";
-          nameSpan.textContent = fromName || "對方";
-          bubble.appendChild(nameSpan);
-        }
-
-        const textSpan = document.createElement("div");
-        textSpan.textContent = text;
-        bubble.appendChild(textSpan);
-
-        wrap.appendChild(bubble);
-        messagesEl.appendChild(wrap);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      }
-
-      function updateChatTitle() {
-        if (!currentPartnerNickname) {
-          chatTitle.textContent = "尚未配對";
-          return;
-        }
-        if (chatMode === "saved") {
-          chatTitle.textContent = t("chatTitleSaved", currentPartnerNickname);
-        } else {
-          chatTitle.textContent = t("chatTitleRandom", currentPartnerNickname);
-        }
-      }
-
-      function resetChatState() {
-        stopCountdown();
-        hideCountdown();
-        hideKeepActions();
-        chatLocked = false;
-        chatMode = null;
-        currentPartnerUid = null;
-        currentPartnerNickname = null;
-        currentRoomId = null;
-        clearMessages();
-        chatInput.value = "";
-        updateChatTitle();
-      }
-
-      function backToHomeIdle() {
-        resetChatState();
-        hideChatCard();
-        showMatchPanel();
-        setStatus(t("idle"));
-        matchHint.textContent = "";
-      }
-
-      // --- Firestore：儲存 / 載入已保留緣分 ---
-
-      async function saveRoomToFirestore(
-        roomId,
-        myUid,
-        partnerUid,
-        partnerNickname
-      ) {
-        if (!roomId || !myUid || !partnerUid) return;
-
-        const createdAt = new Date().toISOString();
-
-        // rooms collection
-        await setDoc(
-          doc(db, "rooms", roomId),
-          {
-            participants: [myUid, partnerUid],
-            createdAt,
-          },
-          { merge: true }
-        );
-
-        // 自己這邊的 savedRooms
-        await setDoc(
-          doc(db, "users", myUid, "savedRooms", roomId),
-          {
-            roomId,
-            partnerUid,
-            partnerNickname,
-            createdAt,
-          },
-          { merge: true }
-        );
-
-        // 對方那邊的 savedRooms
-        await setDoc(
-          doc(db, "users", partnerUid, "savedRooms", roomId),
-          {
-            roomId,
-            partnerUid: myUid,
-            partnerNickname: currentNickname,
-            createdAt,
-          },
-          { merge: true }
-        );
-      }
-
-      async function loadSavedRooms() {
-        if (!currentUid) return;
-        savedListEl.innerHTML =
-          '<div class="text-xs text-slate-500">載入中...</div>';
-
-        const colRef = collection(db, "users", currentUid, "savedRooms");
-        const snap = await getDocs(colRef);
-
-        if (snap.empty) {
-          savedListEl.innerHTML =
-            '<div class="text-xs text-slate-500">目前還沒有保留的對話。</div>';
-          return;
-        }
-
-        let html = "";
-        const rows = [];
-
-        snap.forEach((docSnap) => {
-          const data = docSnap.data();
-          rows.push({
-            roomId: data.roomId,
-            partnerUid: data.partnerUid,
-            partnerNickname: data.partnerNickname || "摸魚夥伴",
-            createdAt: data.createdAt,
-          });
-        });
-
-        // 簡單依時間排序（新到舊）
-        rows.sort((a, b) =>
-          (b.createdAt || "").localeCompare(a.createdAt || "")
-        );
-
-        rows.forEach((r) => {
-          html += `
-            <button
-              class="w-full text-left px-3 py-2 rounded-xl bg-slate-900/60 hover:bg-slate-800 flex items-center justify-between gap-2"
-              data-room-id="${r.roomId}"
-              data-partner-uid="${r.partnerUid}"
-              data-partner-nickname="${r.partnerNickname}"
-            >
-              <div>
-                <div class="text-sm text-slate-100">${r.partnerNickname}</div>
-                <div class="text-[11px] text-slate-500">
-                  房間 ID: ${r.roomId.slice(0, 8)}...
-                </div>
-              </div>
-              <div class="text-[11px] text-emerald-300">
-                再次摸魚
-              </div>
-            </button>
-          `;
-        });
-
-        savedListEl.innerHTML = html;
-
-        // 綁定 click 事件
-        savedListEl.querySelectorAll("button[data-room-id]").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const roomId = btn.getAttribute("data-room-id");
-            const partnerNickname = btn.getAttribute(
-              "data-partner-nickname"
-            );
-            openSavedChat(roomId, partnerNickname);
-          });
-        });
-      }
-
-      function openSavedChat(roomId, partnerNickname) {
-        if (!socket) return;
-
-        chatMode = "saved";
-        chatLocked = false;
-        currentRoomId = roomId;
-        currentPartnerNickname = partnerNickname || "摸魚夥伴";
-
-        disableMatchPanelWhileChat();
-        showChatCard();
-        hideCountdown();
-        hideKeepActions();
-        clearMessages();
-        updateChatTitle();
-        appendSystemMessage(
-          `已重新連線 ${currentPartnerNickname}，這是你們保留的摸魚緣分。`
-        );
-
-        socket.emit("join-saved-room", { roomId });
-      }
-
-      // --- Socket.io 相關 ---
-
-      function setupSocketHandlers() {
-        if (!socket) return;
-
-        socket.on("connect", () => {
-          console.log("🔌 socket 連線成功", socket.id);
-        });
-
-        socket.on("status", (text) => {
-          setStatus(text);
-        });
-
-        socket.on("match", (payload) => {
-          chatMode = "random";
-          chatLocked = false;
-          currentPartnerNickname =
-            payload.partnerNickname || "摸魚夥伴";
-          currentPartnerUid = payload.partnerUid || null;
-          currentRoomId = null;
-
-          disableMatchPanelWhileChat();
-          showChatCard();
-          clearMessages();
-          updateChatTitle();
-          appendSystemMessage(payload.message || "配對成功！");
-          matchHint.textContent = "";
-          setStatus("配對成功，開始聊天吧！");
-          startCountdown();
-        });
-
-        socket.on("chat", (msg) => {
-          const text = msg.text || msg.message || "";
-          const fromName = msg.from || "對方";
-          const isMe = fromName === currentNickname;
-          appendChatMessage(text, isMe, fromName);
-        });
-
-        socket.on("show-keep-option", () => {
-          // 對方先按了「保留」，我們這邊提前顯示選項＋提示
-          showKeepActions();
-          keepHint.textContent = t("partnerWantsKeep");
-        });
-
-        socket.on("keep-confirmed", async ({ partnerUid, partnerNickname }) => {
-          // 兩邊都按下保留
-          currentPartnerUid = partnerUid;
-          currentPartnerNickname =
-            partnerNickname || currentPartnerNickname || "摸魚夥伴";
-
-          const uidA = currentUid;
-          const uidB = partnerUid || currentUid;
-          const roomId = [uidA, uidB].sort().join("_");
-
-          chatMode = "saved";
-          chatLocked = false;
-          currentRoomId = roomId;
-
-          stopCountdown();
-          hideCountdown();
-          hideKeepActions();
-          updateChatTitle();
-          appendSystemMessage(t("keepSuccess"));
-
-          // 加入房間（後端會把 socket.currentRoomId 設定好）
-          socket.emit("join-saved-room", { roomId });
-
-          // Firestore 寫入房間資料與 savedRooms
-          try {
-            await saveRoomToFirestore(
-              roomId,
-              currentUid,
-              currentPartnerUid,
-              currentPartnerNickname
-            );
-            await loadSavedRooms();
-          } catch (err) {
-            console.error("儲存保留緣分失敗：", err);
-          }
-        });
-
-        socket.on("saved-room-joined", ({ roomId }) => {
-          console.log("🧵 已加入保留房間", roomId);
-        });
-
-        socket.on("chat-end", ({ reason } = {}) => {
-          console.log("💨 chat-end：", reason);
-          appendSystemMessage(t("chatEnded"));
-          backToHomeIdle();
-        });
-      }
-
-      function sendMessage() {
-        if (chatLocked) return;
-
-        const text = chatInput.value.trim();
-        if (!text) return;
-
-        socket.emit("chat", {
-          text,
-          from: currentNickname,
-        });
-
-        appendChatMessage(text, true, currentNickname);
-        chatInput.value = "";
-      }
-
-      // --- 事件綁定 ---
-
-      startMatchBtn.addEventListener("click", () => {
-        if (!socket) return;
-        matchHint.textContent = t("matching");
-        setStatus(t("matching"));
-        hideChatCard();
-        socket.emit("start-matching");
-      });
-
-      sendBtn.addEventListener("click", sendMessage);
-
-      chatInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          sendMessage();
-        }
-      });
-
-      forceEndBtn.addEventListener("click", () => {
-        if (!socket) return;
-        socket.emit("end-chat");
-      });
-
-      endBtn.addEventListener("click", () => {
-        if (!socket) return;
-        socket.emit("end-chat");
-      });
-
-      keepBtn.addEventListener("click", () => {
-        if (!socket) return;
-        keepHint.textContent = "已送出保留請求，等待對方選擇...";
-        socket.emit("keep-request");
-      });
-
-      logoutBtn.addEventListener("click", async () => {
-        try {
-          await signOut(auth);
-        } catch (e) {
-          console.error(e);
-        } finally {
-          localStorage.removeItem("moyuUid");
-          localStorage.removeItem("moyuNickname");
-          window.location.href = "login.html";
-        }
-      });
-
-      // --- Firebase Auth：確認登入狀態，載入暱稱 & 建立 socket ---
-
-      applyLangTexts();
-      setStatus("正在檢查登入狀態...");
-
-      onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-          window.location.href = "login.html";
-          return;
-        }
-
-        currentUser = user;
-        currentUid = user.uid;
-
-        try {
-          const userSnap = await getDoc(doc(db, "users", currentUid));
-          if (userSnap.exists()) {
-            const data = userSnap.data();
-            currentNickname = data.nickname || "匿名魚";
-            if (data.lang && (data.lang === "zh" || data.lang === "en")) {
-              currentLang = data.lang;
-              localStorage.setItem("moyuLang", currentLang);
-              applyLangTexts();
-            }
-          } else {
-            currentNickname = "匿名魚";
-          }
-        } catch (err) {
-          console.error("讀取使用者暱稱失敗：", err);
-          currentNickname = "匿名魚";
-        }
-
-        nicknameText.textContent = currentNickname;
-        localStorage.setItem("moyuUid", currentUid);
-        localStorage.setItem("moyuNickname", currentNickname);
-
-        setStatus(t("idle"));
-
-        // 建立 socket 連線
-        socket = io({
-          query: {
-            uid: currentUid,
-            nickname: currentNickname,
-          },
-        });
-
-        setupSocketHandlers();
-
-        // 載入已保留緣分
-        await loadSavedRooms();
-      });
-    </script>
+    <!-- 主聊天邏輯：原本的，不動 -->
+    <script type="module" src="./client.js"></script>
+
+    <!-- Home 頁面的 i18n：只動靜態文案 -->
+    <script type="module" src="./home.js"></script>
   </body>
 </html>

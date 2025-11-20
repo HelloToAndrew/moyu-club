@@ -1,52 +1,387 @@
-/* public/css/main.css */
+/* main.css v2
+   全域樣式 + Moyu 共用元件 + 聊天室佈局
+   氣氛：深海版 Calm × 極簡 Tinder × 乾淨 Discord
+*/
 
-/* 全站字體與背景修飾 */
+/* ============================= */
+/* 基本變數：顏色 / 圓角 / 陰影 */
+/* ============================= */
+:root {
+  /* Brand palette */
+  --moyu-deep-blue: #0c1e3c;   /* 深海主色 */
+  --moyu-indigo: #4a5b9d;      /* 流線藍紫 */
+  --moyu-soft-lavender: #e4e6ff;
+  --moyu-soft-mint: #eaf9f3;
+
+  /* Frames */
+  --moyu-gold: #ffd26a;        /* Top 100 金框 */
+  --moyu-silver: #c4c7cf;      /* 一般公司 */
+  --moyu-student-green: #9de4c2;
+
+  /* Neutrals */
+  --moyu-bg: #f5f7fb;
+  --moyu-card-bg: #ffffff;
+  --moyu-border-subtle: #e2e5f0;
+  --moyu-text-main: #0f172a;
+  --moyu-text-muted: #6b7280;
+
+  /* Alerts */
+  --moyu-success: #22c55e;
+  --moyu-warning: #f59e0b;
+  --moyu-danger: #ef4444;
+
+  /* Radii & shadows */
+  --moyu-radius-lg: 16px;
+  --moyu-radius-md: 10px;
+  --moyu-radius-sm: 999px;
+
+  --moyu-shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.18);
+  --moyu-shadow-card: 0 10px 30px rgba(15, 23, 42, 0.12);
+  --moyu-shadow-subtle: 0 2px 10px rgba(15, 23, 42, 0.06);
+}
+
+/* ============ */
+/* 全域字體設定 */
+/* ============ */
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+  color: var(--moyu-text-main);
+  background-color: var(--moyu-bg);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Chat 區域捲動條 */
-.chat-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #9ca3af #e5e7eb;
+/* ============================ */
+/* Moyu 通用頁面與卡片樣式      */
+/* ============================ */
+
+/* 頁面背景：白底＋柔和漸層，不要太花 */
+.moyu-page {
+  min-height: 100vh;
+  padding: 30px;
+  background:
+    radial-gradient(circle at top left, #e0f2fe 0, transparent 55%),
+    radial-gradient(circle at bottom right, #e4e6ff 0, transparent 60%),
+    var(--moyu-bg);
+  box-sizing: border-box;
 }
 
-.chat-scroll::-webkit-scrollbar {
+/* 若有需要更純白的內頁也可以用這個 */
+.moyu-page-plain {
+  min-height: 100vh;
+  padding: 30px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* 中央卡片容器：霧面卡片＋柔陰影 */
+.moyu-card {
+  max-width: 420px;
+  margin: 0 auto;
+  background: radial-gradient(circle at top, #ffffff 0, #f8f9ff 55%);
+  padding: 24px 26px;
+  border-radius: var(--moyu-radius-lg);
+  box-shadow: var(--moyu-shadow-card);
+  border: 1px solid rgba(226, 229, 240, 0.8);
+  box-sizing: border-box;
+}
+
+.moyu-card h1,
+.moyu-card h2 {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+/* 副標說明文字 */
+.moyu-subtitle {
+  color: var(--moyu-text-muted);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+/* 區塊標題 */
+.moyu-section-title {
+  margin-top: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: #111827;
+  border-bottom: 1px solid rgba(226, 229, 240, 0.85);
+  padding-bottom: 4px;
+}
+
+/* 欄位標籤 */
+.moyu-field-label {
+  font-size: 13px;
+  color: #4b5563;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+/* 只讀欄位盒子（email 那塊） */
+.moyu-field-box {
+  padding: 10px 12px;
+  border-radius: var(--moyu-radius-md);
+  border: 1px solid var(--moyu-border-subtle);
+  background: linear-gradient(135deg, #f9fafb, #f4f5ff);
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* 灰度說明文字（其他設定描述） */
+.moyu-text-muted {
+  font-size: 13px;
+  color: var(--moyu-text-muted);
+}
+
+/* 訊息提示區 */
+.moyu-msg {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #4b5563;
+  min-height: 18px;
+}
+
+/* ================= */
+/* 徽章（Badge）     */
+/* ================= */
+
+.moyu-badge {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: var(--moyu-radius-sm);
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+/* 驗證通過 */
+.moyu-badge-ok {
+  background: var(--moyu-success);
+}
+
+/* 需要動作／警示 */
+.moyu-badge-warn {
+  background: var(--moyu-warning);
+}
+
+/* 裝飾：身份框（之後聊天頭像可以用） */
+.moyu-frame-top100 {
+  border-radius: 14px;
+  border: 1px solid var(--moyu-gold);
+  box-shadow: 0 0 0 1px rgba(255, 210, 106, 0.4);
+}
+
+.moyu-frame-company {
+  border-radius: 14px;
+  border: 1px solid var(--moyu-silver);
+}
+
+.moyu-frame-student {
+  border-radius: 14px;
+  border: 1px solid var(--moyu-student-green);
+}
+
+.moyu-frame-freedom {
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+/* ================= */
+/* 輸入框 / 選單      */
+/* ================= */
+
+.moyu-input,
+.moyu-select {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: var(--moyu-radius-md);
+  border: 1px solid #cbd5f5;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: var(--moyu-text-main);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.moyu-input::placeholder {
+  color: #9ca3af;
+}
+
+.moyu-input:focus,
+.moyu-select:focus {
+  outline: none;
+  border-color: var(--moyu-indigo);
+  box-shadow: 0 0 0 1px rgba(74, 91, 157, 0.2),
+    0 10px 25px rgba(15, 23, 42, 0.12);
+  background-color: #ffffff;
+}
+
+/* ================= */
+/* 按鈕（Buttons）    */
+/* ================= */
+
+.moyu-btn-row {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.moyu-btn-row-left {
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+.moyu-btn-row-space-between {
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+/* 通用按鈕基底 */
+.moyu-btn {
+  padding: 9px 14px;
+  border-radius: var(--moyu-radius-md);
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.08s ease;
+}
+
+/* 按下的微縮放感 */
+.moyu-btn:active {
+  transform: scale(0.97);
+}
+
+/* 主要按鈕：深藍 */
+.moyu-btn-primary {
+  background: linear-gradient(135deg, var(--moyu-deep-blue), #1d2e5d);
+  color: #ffffff;
+  box-shadow: var(--moyu-shadow-subtle);
+}
+
+.moyu-btn-primary:hover {
+  background: linear-gradient(135deg, #132653, #24376b);
+  box-shadow: var(--moyu-shadow-soft);
+}
+
+/* 次要按鈕：淡紫底 */
+.moyu-btn-secondary {
+  background: #eef2ff;
+  color: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.moyu-btn-secondary:hover {
+  background: #dde4ff;
+  box-shadow: var(--moyu-shadow-subtle);
+}
+
+/* 危險動作按鈕 */
+.moyu-btn-danger {
+  background: linear-gradient(135deg, var(--moyu-danger), #b91c1c);
+  color: #ffffff;
+}
+
+.moyu-btn-danger:hover {
+  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+  box-shadow: var(--moyu-shadow-subtle);
+}
+
+/* ================= */
+/* 聊天室佈局        */
+/* ================= */
+
+/* 聊天室外框：固定高度，像懸浮面板 */
+#chat-card {
+  display: flex;
+  flex-direction: column;
+
+  height: 520px;
+  max-height: 520px;
+
+  overflow: hidden;
+  box-sizing: border-box;
+
+  background: radial-gradient(circle at top, #ffffff 0, #f8fafc 55%);
+  border-radius: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: var(--moyu-shadow-soft);
+}
+
+/* 訊息區：吃掉剩餘空間 + 出捲軸 */
+#messages,
+.chat-messages {
+  flex: 1 1 auto;
+  min-height: 0; /* 關鍵：不然 flex 會被內容撐爆 */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  word-wrap: break-word;
+  word-break: break-word;
+  scroll-behavior: smooth;
+
+  padding-right: 4px;
+}
+
+/* 左側「已保留緣分」列表高度限制 */
+#saved-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* ================= */
+/* 捲軸美化          */
+/* ================= */
+
+.chat-messages::-webkit-scrollbar,
+#messages::-webkit-scrollbar,
+#saved-list::-webkit-scrollbar {
   width: 6px;
 }
 
-.chat-scroll::-webkit-scrollbar-track {
-  background: #e5e7eb;
-}
-
-.chat-scroll::-webkit-scrollbar-thumb {
-  background-color: #9ca3af;
+.chat-messages::-webkit-scrollbar-thumb,
+#messages::-webkit-scrollbar-thumb,
+#saved-list::-webkit-scrollbar-thumb {
   border-radius: 999px;
+  background: rgba(148, 163, 184, 0.6);
 }
 
-/* 漸層背景給 login / signup 用 */
-.moyu-bg {
-  background: radial-gradient(circle at top, #dbeafe 0, #eff6ff 35%, #f9fafb 100%);
+.chat-messages::-webkit-scrollbar-track,
+#messages::-webkit-scrollbar-track,
+#saved-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* 簡單小動畫：配對中點點點 */
-.blink-dot::after {
-  content: "…";
-  animation: blinkDots 1.2s infinite;
+/* ================= */
+/* 小裝飾（可選）     */
+/* ================= */
+
+/* 流線背景輔助：若之後要在某些區塊加“暗流感” */
+.moyu-flowlines {
+  position: relative;
+  overflow: hidden;
 }
 
-@keyframes blinkDots {
-  0% {
-    content: "";
-  }
-  33% {
-    content: ".";
-  }
-  66% {
-    content: "..";
-  }
-  100% {
-    content: "...";
-  }
+.moyu-flowlines::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(74, 91, 157, 0.14) 0, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.12) 0, transparent 55%);
+  opacity: 0.9;
+  pointer-events: none;
 }

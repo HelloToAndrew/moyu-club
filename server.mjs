@@ -4,9 +4,8 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createChatRoom } from "./utils/firestore.mjs"; // 目前只有使用這個
+import { createChatRoom } from "./utils/firestore.mjs"; // 若沒有這支，可以改成空函式或自行實作
 
-// --------------- 基本設定 ---------------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -16,25 +15,23 @@ const io = new Server(server);
 
 const PORT = 3000;
 
-// 靜態檔案
+// 靜態檔案：public 底下放 home.html / client.js / main.css 等
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/utils", express.static(path.join(__dirname, "utils")));
 
-// --------------- 匹配與對話狀態 ---------------
+// --------- 匹配與聊天狀態 ---------
 
-// 一輪隨機配對的聊天時間（目前 5 秒測試，要改 5 分鐘：5 * 60 * 1000）
+// 一輪聊天時間（目前 5 秒測試，要改成 5 分鐘就改這裡）
 const MATCH_DURATION_MS = 5 * 1000;
 
-// 尚未配對的使用者（等待池只放一個）
+// 等待配對的 socket（簡單版：只維持一個等待者）
 let waitingSocket = null;
 
-// socket.id ↔ partner.socket.id
+// socket.id -> partner.socket.id（只用在「隨機配對」階段）
 const pairs = new Map();
 
-// 「一輪隨機配對」的暫時 session 狀態
-// key: sessionId, value: { sessionId, socketIds: [idA, idB], messages: [...], expireAt }
+// 一輪配對的暫存 session
+// key: sessionId, value: { sessionId, socketIds: [idA, idB], messages: [], expireAt }
 const activeSessions = new Map();
-
 // sessionId -> setTimeout handle
 const sessionTimers = new Map();
 
@@ -42,12 +39,28 @@ function generateRoomId(id1, id2) {
   return [id1, id2].sort().join("_");
 }
 
-// 一輪隨機配對用的 sessionId（用 socket.id 組）
 function generateSessionId(socketA, socketB) {
+  // 這裡用 socket.id 做 session key（只在伺服器內部用）
   return generateRoomId(socketA.id, socketB.id);
 }
 
-// 建立一輪配對＋啟動伺服器倒數
+function cleanupSession(sessionId) {
+  const session = activeSessions.get(sessionId);
+  if (session) {
+    const [idA, idB] = session.socketIds;
+    if (idA) pairs.delete(idA);
+    if (idB) pairs.delete(idB);
+  }
+  activeSessions.delete(sessionId);
+
+  const timer = sessionTimers.get(sessionId);
+  if (timer) {
+    clearTimeout(timer);
+    sessionTimers.delete(sessionId);
+  }
+}
+
+// 建立隨機配對
 function pairUsers(socketA, socketB) {
   const nicknameA = socketA.nickname || "匿名魚";
   const nicknameB = socketB.nickname || "匿名魚";
@@ -72,7 +85,7 @@ function pairUsers(socketA, socketB) {
   socketA.keepRequest = false;
   socketB.keepRequest = false;
 
-  // 伺服器端倒數：到時間就發 timer-expired 給雙方
+  // 伺服器自己的倒數計時，到點時通知前端顯示保留選項
   const timer = setTimeout(() => {
     const session = activeSessions.get(sessionId);
     if (!session) return;
@@ -84,7 +97,6 @@ function pairUsers(socketA, socketB) {
 
   sessionTimers.set(sessionId, timer);
 
-  // 通知雙方：配對成功＋帶 expireAt 給前端顯示倒數
   io.to(socketA.id).emit("match", {
     message: "配對成功！遇見摸魚夥伴 🐡",
     partnerNickname: nicknameB,
@@ -99,41 +111,45 @@ function pairUsers(socketA, socketB) {
     expireAt,
   });
 
-  console.log(`🎯 配對成功：${socketA.id}(${nicknameA}) <--> ${socketB.id}(${nicknameB})`);
+  console.log(
+    `🎯 配對成功：${socketA.id}(${nicknameA}) <--> ${socketB.id}(${nicknameB})`
+  );
 }
 
-// 清除 session（倒數、配對狀態一起清）
-function cleanupSession(sessionId) {
-  const session = activeSessions.get(sessionId);
-  if (session) {
-    const [idA, idB] = session.socketIds;
-    if (idA) pairs.delete(idA);
-    if (idB) pairs.delete(idB);
-  }
-  activeSessions.delete(sessionId);
-
-  const timer = sessionTimers.get(sessionId);
-  if (timer) {
-    clearTimeout(timer);
-    sessionTimers.delete(sessionId);
-  }
-}
-
-// --------------- Socket 連線 ---------------
+// --------- Socket.io ---------
 io.on("connection", (socket) => {
   const nickname = socket.handshake.query.nickname || "匿名魚";
   const uid = socket.handshake.query.uid || null;
 
   socket.nickname = nickname;
   socket.uid = uid;
+  socket.currentSessionId = null;
+  socket.currentRoomId = null;
+  socket.keepRequest = false;
 
   console.log(`🐠 ${nickname} 已連線 (${socket.id}) uid=${uid || "無"}`);
 
-  // ===== 1. 開始配對 =====
+  // 0. 訂閱所有已保留房間（用來收未讀訊息）
+  socket.on("subscribe-saved-rooms", ({ roomIds }) => {
+    if (!Array.isArray(roomIds)) return;
+
+    roomIds.forEach((roomId) => {
+      if (typeof roomId === "string" && roomId.trim()) {
+        socket.join(roomId);
+      }
+    });
+
+    console.log(
+      `🔔 ${socket.nickname} 訂閱保留房間：`,
+      roomIds.filter((r) => typeof r === "string")
+    );
+  });
+
+  // 1. 開始隨機配對
   socket.on("start-matching", () => {
     console.log(`🎣 ${nickname} 要開始配對 (${socket.id})`);
 
-    // 若已在舊 session，先清掉
+    // 若已經有舊的 session，先清掉
     if (socket.currentSessionId) {
       cleanupSession(socket.currentSessionId);
       socket.currentSessionId = null;
@@ -141,44 +157,54 @@ io.on("connection", (socket) => {
     socket.currentRoomId = null;
     socket.keepRequest = false;
 
+    // 有人在排隊，而且不是自己，就直接配對
     if (waitingSocket && waitingSocket.id !== socket.id) {
       const partner = waitingSocket;
       waitingSocket = null;
       pairUsers(socket, partner);
     } else {
+      // 沒有人在排隊，自己當等待者
       waitingSocket = socket;
       socket.emit("status", "🎣 正在尋找另一隻魚...");
     }
   });
 
-  // ===== 2. 取消配對 =====
-  socket.on("cancel-matching", () => {
-    if (waitingSocket && waitingSocket.id === socket.id) {
-      waitingSocket = null;
-      socket.emit("status", "已取消配對");
-      console.log(`⏹️ ${nickname} 取消配對`);
-    }
-  });
-
-  // ===== 3. 一般聊天 =====
+  // 2. 收到前端傳來訊息（隨機配對 or 保留房間）
   socket.on("chat", (msg) => {
     const text = msg.text || msg.message || "";
     if (!text) return;
 
-    const now = new Date();
-    const timestamp = now.toISOString();
+    const timestamp = new Date().toISOString();
 
-    // --- A. 尚在「隨機配對」階段 ---
-    if (!socket.currentRoomId && socket.currentSessionId) {
+    // 🔹 2-1) 保留房間訊息：前端會帶 roomId
+    if (msg.roomId) {
+      const roomId = msg.roomId;
+
+      // 只發給同房間的其他人，不包含自己 → 不會重複看到一次
+      socket.to(roomId).emit("chat", {
+        text,
+        from: socket.nickname || "匿名魚",
+        fromUid: socket.uid || null,
+        timestamp,
+        roomId,
+      });
+
+      // 若之後要記錄歷史訊息，可以在這裡寫 DB
+      return;
+    }
+
+    // 🔹 2-2) 隨機配對訊息：沒有 roomId，就走 session 流程
+    if (socket.currentSessionId && !socket.currentRoomId) {
       const session = activeSessions.get(socket.currentSessionId);
       if (!session) return;
 
-      // 伺服器檢查倒數：超時就不送訊息
+      // 伺服器也檢查是否超時
       if (session.expireAt && Date.now() > session.expireAt) {
         socket.emit("timer-expired");
         return;
       }
 
+      // 紀錄訊息內容（之後保留緣分要用）
       session.messages.push({
         fromUid: socket.uid || null,
         fromNickname: socket.nickname || "匿名魚",
@@ -186,40 +212,25 @@ io.on("connection", (socket) => {
         timestamp,
       });
 
-      const partnerId = pairs.get(socket.id);
-      if (!partnerId) return;
+      const [idA, idB] = session.socketIds;
+      const partnerId = idA === socket.id ? idB : idA;
 
-      const payload = {
-        text,
-        from: socket.nickname || "摸魚夥伴",
-        fromUid: socket.uid || null,
-        timestamp,
-      };
-
-      // 訊息一律走 "chat" 事件；前端只在這裡 append UI（避免重複）
-      io.to(socket.id).emit("chat", payload);      // 自己也收到（自己那邊顯示在右側）
-      io.to(partnerId).emit("chat", payload);      // 對方收到（顯示在左側）
+      // ✅ 僅發給對方，不發回自己 → 不會在自己畫面再多一則
+      if (partnerId) {
+        io.to(partnerId).emit("chat", {
+          text,
+          from: socket.nickname || "匿名魚",
+          timestamp,
+        });
+      }
 
       return;
     }
 
-    // --- B. 已在「保留緣分的房間」內 ---
-    if (socket.currentRoomId) {
-      const payload = {
-        text,
-        from: socket.nickname || "摸魚夥伴",
-        fromUid: socket.uid || null,
-        roomId: socket.currentRoomId,
-        timestamp,
-      };
-
-      // 房間內所有人都收到（包含自己）
-      io.to(socket.currentRoomId).emit("chat", payload);
-      return;
-    }
+    // 其他狀況（沒有 session、也沒有 room）就忽略
   });
 
-  // ===== 4. 保留緣分 =====
+  // 3. 保留緣分
   socket.on("keep-request", async () => {
     socket.keepRequest = true;
 
@@ -232,13 +243,12 @@ io.on("connection", (socket) => {
     const sessionId = socket.currentSessionId || partnerSocket.currentSessionId;
     const session = sessionId ? activeSessions.get(sessionId) : null;
 
-    // session 已過期 → 不允許保留
     if (session && session.expireAt && Date.now() > session.expireAt) {
       socket.emit("keep-denied-expired");
       return;
     }
 
-    // 雙方都按了保留 → 建立永久房間
+    // 雙方都按下「保留」
     if (partnerSocket.keepRequest) {
       const userKeyA = socket.uid || socket.id;
       const userKeyB = partnerSocket.uid || partnerSocket.id;
@@ -246,14 +256,13 @@ io.on("connection", (socket) => {
       const createdAt = new Date().toISOString();
       const transcript = session ? session.messages || [] : [];
 
-      // 停止這一輪配對的 session
       if (sessionId) {
         cleanupSession(sessionId);
       }
       socket.currentSessionId = null;
       partnerSocket.currentSessionId = null;
 
-      // 加入房間（之後聊天都走 roomId）
+      // 兩邊都加入這個 persistent 房間
       socket.join(roomId);
       partnerSocket.join(roomId);
       socket.currentRoomId = roomId;
@@ -265,94 +274,88 @@ io.on("connection", (socket) => {
         roomId,
         createdAt,
         transcript,
+        partnerUid: partnerSocket.uid || null,
+        partnerNickname: partnerSocket.nickname || "摸魚夥伴",
       });
       io.to(partnerId).emit("keep-confirmed", {
         roomId,
         createdAt,
         transcript,
+        partnerUid: socket.uid || null,
+        partnerNickname: socket.nickname || "摸魚夥伴",
       });
 
-      // 寫入 Firestore（如果 utils/firestore.mjs 有支援 transcript / createdAt 就會存進去）
       try {
         await createChatRoom(roomId, userKeyA, userKeyB, transcript, createdAt);
       } catch (err) {
         console.error("❗ createChatRoom 發生錯誤：", err);
       }
     } else {
-      // 提醒對方顯示「保留緣分」按鈕
+      // 提醒對方顯示保留選項
       io.to(partnerId).emit("show-keep-option");
     }
   });
 
-  // ===== 5. 結束對話 =====
-  socket.on("end-chat", () => {
-    const partnerId = pairs.get(socket.id);
-    const sessionId = socket.currentSessionId;
+  // 4. 結束對話（隨機配對 or 保留房間）
+    socket.on("end-chat", () => {
+      const partnerId = pairs.get(socket.id);
+      const sessionId = socket.currentSessionId;
 
-    if (partnerId) {
-      io.to(partnerId).emit("chat-end");
-      pairs.delete(socket.id);
-      pairs.delete(partnerId);
-    }
+      // 1) 隨機配對：真的結束，兩邊都斷開
+      if (partnerId) {
+        io.to(partnerId).emit("chat-end");
+        pairs.delete(socket.id);
+        pairs.delete(partnerId);
+      }
 
-    if (sessionId) {
-      cleanupSession(sessionId);
-      socket.currentSessionId = null;
-    }
+      if (sessionId) {
+        cleanupSession(sessionId);
+        socket.currentSessionId = null;
+      }
 
-    socket.currentRoomId = null;
-    socket.keepRequest = false;
-    socket.emit("chat-end");
-  });
+      // 2) 已保留房間：不要離開房間，保留 socket.join(roomId) 的關係
+      //    這樣對方之後傳訊息，你仍然會收到 "chat" 事件，
+      //    前端因為 chatMode !== 'saved' 或 currentRoomId 不同，
+      //    就會當成未讀訊息，亮紅點。
+      // if (socket.currentRoomId) {
+      //   socket.leave(socket.currentRoomId);   // ← 把這段拿掉
+      //   socket.currentRoomId = null;
+      // }
 
-  // ===== 6. 進入已保留房間 =====
+      socket.keepRequest = false;
+      socket.emit("chat-end");
+    });
+
+  // 5. 進入已保留房間（左邊列表點某個緣分）
   socket.on("join-saved-room", ({ roomId }) => {
     if (!roomId) return;
 
-    // ⚠️ 若目前正在配對或聊天，不允許切到已保留房間
-    if (socket.currentSessionId || socket.currentRoomId) {
+    // 若是「隨機配對聊天中」，先不允許切到已保留房間
+    if (socket.currentSessionId && !socket.currentRoomId) {
       socket.emit("cannot-join-room-while-chatting");
       return;
     }
 
+    // 如果原本在某個保留房間，就先離開舊的
+    if (socket.currentRoomId && socket.currentRoomId !== roomId) {
+      socket.leave(socket.currentRoomId);
+    }
+
+    // 加入新的保留房間，並把 currentRoomId 更新成這個房間
     socket.join(roomId);
     socket.currentRoomId = roomId;
     socket.currentSessionId = null;
 
     console.log(`📁 ${socket.nickname}(${socket.id}) 進入已保留房間 ${roomId}`);
+
+    socket.emit("saved-room-joined", { roomId });
   });
 
-  // ===== 7. 刪除緣分 =====
-  // 前端：socket.emit("delete-room", { roomId })
-  socket.on("delete-room", ({ roomId }) => {
-    if (!roomId) return;
-
-    console.log(`🗑️ ${socket.nickname} 要刪除房間 ${roomId}`);
-
-    // 通知房間內所有人：這個緣分被刪除了
-    io.to(roomId).emit("room-deleted", { roomId });
-
-    // 把房間內 socket 的 currentRoomId 清掉，並讓他們離開房間
-    const room = io.sockets.adapter.rooms.get(roomId);
-    if (room) {
-      for (const id of room) {
-        const s = io.sockets.sockets.get(id);
-        if (!s) continue;
-        if (s.currentRoomId === roomId) {
-          s.leave(roomId);
-          s.currentRoomId = null;
-        }
-      }
-    }
-
-    // 若未來要同步刪除 Firestore，可以在這裡呼叫 deleteChatRoom(roomId)
-    // 目前先只做到「前端列表消失＋socket 狀態更新」
-  });
-
-  // ===== 8. 斷線 =====
+  // 6. 斷線
   socket.on("disconnect", () => {
     console.log(`❌ ${socket.nickname} (${socket.id}) 離線`);
 
+    // 如果在等待配對列表裡，把自己移除
     if (waitingSocket && waitingSocket.id === socket.id) {
       waitingSocket = null;
     }
@@ -373,7 +376,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// --------------- 啟動伺服器 ---------------
+// --------- 啟動伺服器 ---------
 server.listen(PORT, () => {
   console.log(`🚀 Mōyu Club server running at http://localhost:${PORT}`);
 });

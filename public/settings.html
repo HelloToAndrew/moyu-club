@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mōyu Club - 帳戶設定</title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body class="moyu-page">
+
+  <div class="moyu-card">
+    <h2 id="settings-title">帳戶設定 ⚙️</h2>
+    <div id="settings-subtitle" class="moyu-subtitle">
+      管理你的登入信箱、暱稱、語言與之後的擴充功能。
+    </div>
+
+    <!-- 電子郵件資訊 -->
+    <div class="moyu-section-title" id="settings-email-section-title">登入信箱</div>
+    <div class="moyu-field-label" id="settings-email-label">Email</div>
+    <div class="moyu-field-box">
+      <span id="email-text">載入中...</span>
+      <span id="email-status" class="moyu-badge moyu-badge-warn">檢查中</span>
+    </div>
+    <div class="moyu-btn-row moyu-btn-row-left">
+      <button class="moyu-btn moyu-btn-secondary" id="btn-resend" style="display:none;" onclick="resendVerify()">
+        重新寄送驗證信
+      </button>
+    </div>
+
+    <!-- 暱稱設定 -->
+    <div class="moyu-section-title" id="settings-nickname-section-title">暱稱設定</div>
+    <div class="moyu-field-label" id="settings-nickname-label">
+      顯示暱稱（聊天時顯示的名字）
+    </div>
+    <input id="nickname-input" class="moyu-input" placeholder="輸入你的暱稱" />
+
+    <!-- 語言設定 -->
+    <div class="moyu-section-title" id="settings-lang-section-title">語言設定</div>
+    <div class="moyu-field-label" id="settings-lang-label">介面語言</div>
+    <select id="lang-select" class="moyu-select">
+      <option value="zh">繁體中文</option>
+      <option value="en">English</option>
+    </select>
+
+    <div class="moyu-btn-row">
+      <button class="moyu-btn moyu-btn-secondary" id="btn-back-home" onclick="goHome()">
+        回主畫面
+      </button>
+      <button class="moyu-btn moyu-btn-primary" id="btn-save-profile" onclick="saveProfile()">
+        儲存設定
+      </button>
+    </div>
+
+    <div class="moyu-btn-row moyu-btn-row-space-between">
+      <button class="moyu-btn moyu-btn-danger" id="btn-logout" onclick="logout()">
+        登出帳號
+      </button>
+    </div>
+
+    <div id="msg" class="moyu-msg"></div>
+  </div>
+
+  <!-- 邏輯全部移到 settings.js -->
+  <script type="module" src="./settings.js"></script>
+</body>
+</html>
