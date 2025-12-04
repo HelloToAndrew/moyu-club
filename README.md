@@ -45,7 +45,7 @@
 ---
 
 ## Installation and How to Run
-**[!IMPORTANT] Prerequisites**
+**Prerequisites**
 - Node.js (Recommended version 18 or higher)
 - npm (Installed with Node.js)
 - Firebase Project: Configure your own Firebase credentials within public/js/firebase.js to run the application's authentication and database features.
