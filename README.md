@@ -24,29 +24,48 @@
 | **Other HTML Pages** | Frontend (HTML) | `login.html`, `reset.html`, `nickname.html`, `verify.html`, etc. Handles all account management flows and interface navigation. |
 ---
 ## Technical Features 
-**Real-Time Matching and Chat via Socket.io**
+**1. Real-Time Matching and Chat via Socket.io**
 - The core functionality uses **Node.js** and **Socket.io** for low-latency, bi-directional communication, essential for instantaneous user matching and message transfer.
 - The server maintains a simple, in-memory matching pool (`matchingPool`) and handles the logic for pairing up waiting users.
 
-**Domain-Based User Tiering**
+**2. Domain-Based User Tiering**
 - The **`signup.js`** module implements a function (`classifyDomainFromEmail`) to categorize users by their email domain (e.g., `'company'`, `'school'`, or `'free'`).
 - This categorization determines the user's allowance for **saved connections** (**Verified Users get 3 slots**, **Free Users get 1**), acting as a key mechanism for quality control.
 - The user's domain status is visually represented on the home screen by an identity frame around their nickname (managed by **`home.js`**).
 
-**Authentication and Persistent Data**
+**3. Authentication and Persistent Data**
 - **Firebase Authentication** manages user sign-up, sign-in, and password reset across pages (e.g., **`login.js`**, **`signup.js`**, **`reset.js`**).
 - **Firestore** serves as the persistent database for storing user profiles, including nickname, `domainType`, language preference, and the list of saved connections.
 
-**Time-Limited Chat Sessions**
+**4. Time-Limited Chat Sessions**
 - Upon successful matching, the server immediately initiates and enforces a **countdown timer** for the chat session, reinforcing the "brief break" concept.
 
-**Internationalization (i18n)**
+**5. Internationalization (i18n)**
 - The entire application supports **language switching** between Traditional Chinese and English, managed by the dedicated **`i18n.js`** module.
-
-
 ---
 
 ## Installation and How to Run
+**[!IMPORTANT] Prerequisites**
+- Node.js (Recommended version 18 or higher)
+- npm (Installed with Node.js)
+- Firebase Project: Configure your own Firebase credentials within public/js/firebase.js to run the application's authentication and database features.
+
+**Step-by-Step Guide**
+1. Clone the Repository Open your terminal and clone the project:
+git clone 
+cd Moyu-Project-Folder
+
+2. Install Dependencies Install Node.js dependencies (primarily express and socket.io):
+npm install
+
+3. Start the Server Start your backend server using Node.js:
+node server.js
+
+4. Access the App Open in your browser: http://localhost:3000/login.html
+
+5. Test the Matching Feature
+    - It is recommended to use two different browsers or incognito windows to register/log in to two separate accounts.
+    - Click the "Start Matching" button in both windows simultaneously to test the real-time matching, countdown, and chat functionality.
 
 ---
 
