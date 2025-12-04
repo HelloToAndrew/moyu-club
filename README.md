@@ -52,14 +52,20 @@
 
 **Step-by-Step Guide**
 1. Clone the Repository Open your terminal and clone the project:
+```bash
 git clone 
 cd Moyu-Project-Folder
+```
 
 2. Install Dependencies Install Node.js dependencies (primarily express and socket.io):
+```bash
 npm install
+```
 
 3. Start the Server Start your backend server using Node.js:
+```bash
 node server.js
+```
 
 4. Access the App Open in your browser: http://localhost:3000/login.html
 
