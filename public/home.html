@@ -2,119 +2,82 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <title>Mōyu Club - 主畫面</title>
+    <title>Mōyu</title>
 
-    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- socket.io 客戶端 -->
+    <link rel="stylesheet" href="/css/main.css" />
     <script src="/socket.io/socket.io.js"></script>
   </head>
 
-  <body class="bg-slate-900 text-slate-100 min-h-screen">
-    <div class="max-w-5xl mx-auto px-4 py-6">
-      <!-- 上方列：LOGO + 暱稱 + 設定 -->
-      <header class="flex items-center justify-between mb-6">
-        <div>
-          <h1 id="app-title" class="text-2xl font-semibold tracking-tight">
-            Mōyu Club 🐟
-          </h1>
-          <p id="app-subtitle" class="text-slate-400 text-sm">
-            只讓真正懂「魚的快樂」的人，遇見彼此。
-          </p>
+  <body class="moyu-page">
+    <!-- 整體寬度：放寬到 6xl，header 和 main 同一個容器 -->
+    <div class="max-w-6xl mx-auto px-4 py-6">
+      <!-- 上方列：LOGO + 副標 + 右側暱稱 + 設定 -->
+      <header
+        class="flex items-center justify-between mb-8 gap-6"
+      >
+        <!-- 左邊：Logo + 副標 -->
+        <div class="flex flex-col">
+          <img src="./images/moyu-logo.png" class="moyu-logo" />
+          <p
+            id="app-subtitle"
+            class="text-slate-400 text-xs sm:text-sm mt-1"
+          ></p>
         </div>
 
-        <div class="flex items-center gap-3">
-          <div class="text-right">
-            <div class="text-sm text-slate-400">
-              <span id="hi-label">嗨，</span>
-              <span
-                id="nickname-text"
-                class="font-semibold text-emerald-300"
-                >...</span
-              >
+        <!-- 右邊：暱稱框 + 設定按鈕 -->
+        <div class="flex items-center gap-3 sm:gap-4 ml-auto">
+
+          <!-- 暱稱框：等高、同樣的 pill -->
+          <div
+            id="nickname-box"
+            class="h-10 px-4 rounded-full border border-slate-600/70 bg-slate-900/40 flex items-center"
+          >
+            <div class="text-sm text-slate-300 flex items-center">
+              <span id="hi-label"></span>
+              <span id="nickname-text" class="font-semibold ml-1">...</span>
             </div>
           </div>
+
+          <!-- 設定按鈕：高度與暱稱框一致 -->
           <button
             id="settings-btn"
             onclick="window.location.href='settings.html'"
-            class="text-xs px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1"
+            class="h-10 px-4 rounded-full border border-slate-600/70 bg-slate-900/40 flex items-center gap-1 text-sm text-slate-200 hover:bg-slate-800 transition"
           >
             <span>⚙️</span>
-            <span id="settings-label">設定</span>
+            <!-- <span id="settings-label"></span>-->
           </button>
+
         </div>
       </header>
 
+      <!-- 主要內容：左右兩欄 -->
       <main class="grid md:grid-cols-2 gap-6">
-        <!-- 左側：狀態 / 隨機配對 / 已保留緣分 -->
+        <!-- 左側：配對卡 ＋ 聊天卡（同一欄位） -->
         <section class="space-y-4">
-          <!-- 狀態卡片 -->
-          <div class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700">
-            <h2
-              id="status-section-title"
-              class="text-sm font-semibold text-slate-200 mb-2"
-            >
-              目前狀態
-            </h2>
-            <p id="status-text" class="text-sm text-slate-300">
-              正在檢查登入狀態...
-            </p>
-          </div>
-
           <!-- 隨機配對卡片 -->
-          <div
-            id="match-panel"
-            class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700"
-          >
-            <h2
-              id="match-section-title"
-              class="text-sm font-semibold text-slate-200 mb-2"
-            >
-              隨機摸魚配對
-            </h2>
-            <p id="match-desc" class="text-xs text-slate-400 mb-3">
-              按下開始之後，我們會幫你找一隻同樣想偷懶的魚。配對成功後有 5 秒時間可以聊天，再決定要不要保留這段緣分。
-            </p>
-            <button
-              id="start-match-btn"
-              class="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-900 text-sm font-semibold hover:bg-emerald-400 disabled:bg-slate-600 disabled:text-slate-300"
-            >
-              開始摸魚配對
-            </button>
+          <div id="match-panel" class="moyu-card">
             <p
-              id="match-hint"
-              class="text-xs text-slate-400 mt-2 min-h-[1.5rem]"
+              id="match-desc"
+              class="moyu-subtitle text-xs mb-3"
             ></p>
-          </div>
-
-          <!-- 已保留緣分卡片 -->
-          <div class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700">
-            <h2
-              id="saved-section-title"
-              class="text-sm font-semibold text-slate-200 mb-1"
-            >
-              已保留的摸魚緣分
-            </h2>
-            <p id="saved-desc" class="text-xs text-slate-400 mb-3">
-              當雙方都按下「保留這段緣分」時，你們會出現在這裡。點一下就能再次偷閒聊天。
-            </p>
-            <div
-              id="saved-list"
-              class="space-y-2 max-h-60 overflow-y-auto text-sm"
-            >
-              <div id="saved-empty-text" class="text-slate-500 text-xs">
-                目前還沒有保留的對話。
-              </div>
+            <div class="flex items-center gap-2">
+              <button
+                id="start-match-btn"
+                class="flex-1 moyu-btn moyu-btn-primary text-sm font-semibold"
+              ></button>
+              <button
+                id="stop-match-btn"
+                class="moyu-btn moyu-btn-secondary text-xs px-3 py-2 hidden"
+              ></button>
             </div>
           </div>
-        </section>
 
-        <!-- 右側：聊天室 -->
-        <section class="flex flex-col">
+          <!-- 聊天室卡片 -->
           <div
             id="chat-card"
-            class="bg-slate-800/70 rounded-2xl p-4 border border-slate-700 hidden flex flex-col max-h-[520px]"
+            class="moyu-card hidden flex flex-col max-h-[520px]"
           >
             <!-- 聊天室標題列 -->
             <div class="flex items-center justify-between mb-3">
@@ -122,34 +85,32 @@
                 <div
                   id="chatroom-label"
                   class="text-xs text-slate-400 uppercase tracking-wide"
-                >
-                  摸魚配對聊天室
-                </div>
+                ></div>
                 <div
                   id="chat-title"
                   class="text-sm font-semibold text-slate-200"
-                >
-                  尚未配對
-                </div>
+                ></div>
               </div>
               <div class="flex items-center gap-3">
                 <div
                   id="countdown-wrap"
                   class="px-2 py-1 rounded-full bg-slate-900/70 border border-amber-400/40 text-xs text-amber-300 hidden"
                 >
-                  ⏳ 剩餘
-                  <span id="countdown" class="font-mono">5s</span>
+                  <span id="countdown-prefix"></span>
+                  <span
+                    id="countdown"
+                    class="font-mono ml-1"
+                    >5s</span
+                  >
                 </div>
                 <button
                   id="force-end-btn"
                   class="text-xs px-2.5 py-1 rounded-full border border-slate-600 text-slate-300 hover:bg-slate-700"
-                >
-                  結束對話
-                </button>
+                ></button>
               </div>
             </div>
 
-            <!-- 聊天訊息區（高度固定＋卷軸） -->
+            <!-- 聊天訊息區 -->
             <div
               id="messages"
               class="chat-messages bg-slate-900/60 rounded-xl p-3 text-sm space-y-2 overflow-y-auto flex-1"
@@ -157,9 +118,7 @@
               <div
                 id="chat-placeholder"
                 class="text-xs text-slate-500 text-center"
-              >
-                配對成功後，這裡會出現你們的對話。
-              </div>
+              ></div>
             </div>
 
             <!-- 輸入區 -->
@@ -169,14 +128,12 @@
                   id="chat-input"
                   type="text"
                   class="flex-1 px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-700 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
-                  placeholder="輸入訊息，按 Enter 或點右邊送出"
+                  placeholder=""
                 />
                 <button
                   id="send-btn"
                   class="px-3 py-2 rounded-xl bg-emerald-500 text-slate-900 text-sm font-semibold hover:bg-emerald-400"
-                >
-                  送出
-                </button>
+                ></button>
               </div>
             </div>
 
@@ -185,22 +142,19 @@
               id="keep-actions"
               class="mt-3 pt-3 border-t border-slate-700 hidden"
             >
-              <div id="keep-question" class="text-xs text-slate-400 mb-2">
-                時間到了，要保留這段摸魚緣分嗎？
-              </div>
+              <div
+                id="keep-question"
+                class="text-xs text-slate-400 mb-2"
+              ></div>
               <div class="flex items-center gap-2">
                 <button
                   id="keep-btn"
                   class="flex-1 py-2 rounded-xl bg-emerald-500 text-slate-900 text-sm font-semibold hover:bg-emerald-400"
-                >
-                  保留這段緣分
-                </button>
+                ></button>
                 <button
                   id="end-btn"
                   class="flex-1 py-2 rounded-xl bg-slate-700 text-slate-100 text-sm hover:bg-slate-600"
-                >
-                  結束並返回主畫面
-                </button>
+                ></button>
               </div>
               <div
                 id="keep-hint"
@@ -209,13 +163,41 @@
             </div>
           </div>
         </section>
+
+        <!-- 右側：已保留緣分 -->
+        <section class="space-y-4">
+          <div class="moyu-card h-full">
+            <div class="flex items-center justify-between mb-2">
+              <h2
+                id="saved-section-title"
+                class="moyu-section-title text-sm"
+              ></h2>
+              <span
+                id="saved-usage"
+                class="text-[11px] text-slate-400"
+              >
+                0 / 1
+              </span>
+            </div>
+            <p
+              id="saved-desc"
+              class="text-xs text-slate-400 mb-3"
+            ></p>
+            <div
+              id="saved-list"
+              class="space-y-2 max-h-60 md:max-h-[420px] overflow-y-auto text-sm"
+            >
+              <div
+                id="saved-empty-text"
+                class="text-slate-500 text-xs"
+              ></div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
 
-    <!-- 主聊天邏輯：原本的，不動 -->
-    <script type="module" src="./client.js"></script>
-
-    <!-- Home 頁面的 i18n：只動靜態文案 -->
-    <script type="module" src="./home.js"></script>
+    <script type="module" src="./JS/home.js"></script>
+    <script type="module" src="./JS/client.js"></script>
   </body>
 </html>

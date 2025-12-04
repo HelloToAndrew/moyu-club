@@ -1,65 +1,102 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <title>Mōyu Club - 帳戶設定</title>
-  <link rel="stylesheet" href="/css/main.css" />
-</head>
-<body class="moyu-page">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mōyu Club - 帳戶設定</title>
 
-  <div class="moyu-card">
-    <h2 id="settings-title">帳戶設定 ⚙️</h2>
-    <div id="settings-subtitle" class="moyu-subtitle">
-      管理你的登入信箱、暱稱、語言與之後的擴充功能。
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 全域樣式 -->
+    <link rel="stylesheet" href="/css/main.css" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+
+  <body class="moyu-page flex items-center justify-center">
+    <div class="moyu-card w-full max-w-md">
+      
+      <!-- 標題 + 語言切換 -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="text-left">
+          <h2 id="settings-title" class="text-xl font-bold text-slate-50">
+            Loading...
+          </h2>
+          <p id="settings-subtitle" class="moyu-subtitle">...</p>
+        </div>
+
+        <div class="flex items-center gap-1 text-[11px]">
+          <button id="langZh" class="moyu-btn moyu-btn-secondary px-3 py-1 text-[11px]">
+            中文
+          </button>
+          <button id="langEn" class="moyu-btn moyu-btn-secondary px-3 py-1 text-[11px]">
+            EN
+          </button>
+        </div>
+      </div>
+
+      <!-- Email 區塊 -->
+      <div class="space-y-2 mb-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <div id="settings-email-section-title" class="moyu-section-title mb-1">
+              登入信箱
+            </div>
+            <div id="settings-email-label" class="moyu-field-label">
+              Email
+            </div>
+          </div>
+        </div>
+
+        <div class="moyu-field-box">
+          <span id="email-text" class="truncate">...</span>
+          <span id="email-status" class="moyu-badge text-xs">...</span>
+        </div>
+
+        <!-- 未驗證時才顯示 -->
+        <div class="moyu-btn-row moyu-btn-row-left mt-2">
+          <button
+            id="btn-resend"
+            class="moyu-btn moyu-btn-secondary text-xs"
+            style="display: none;"
+          >
+            重寄驗證信
+          </button>
+        </div>
+      </div>
+
+      <!-- 暱稱設定 -->
+      <div class="mt-4">
+        <div id="settings-nickname-section-title" class="moyu-section-title mb-1">
+          暱稱設定
+        </div>
+        <div id="settings-nickname-label" class="moyu-field-label">
+          顯示暱稱（聊天時顯示的名字）
+        </div>
+        <input id="nickname-input" type="text" class="moyu-input text-sm" />
+      </div>
+
+      <!-- 底部按鈕列 -->
+      <div class="moyu-btn-row moyu-btn-row-space-between mt-6">
+        <button id="btn-logout" class="moyu-btn moyu-btn-danger text-xs">
+          登出帳號
+        </button>
+
+        <div class="flex gap-2">
+          <button id="btn-back-home" class="moyu-btn moyu-btn-ghost text-xs">
+            回主畫面
+          </button>
+          <button id="btn-save-profile" class="moyu-btn moyu-btn-primary text-xs">
+            儲存設定
+          </button>
+        </div>
+      </div>
+
+      <!-- 訊息 -->
+      <p id="msg" class="moyu-msg mt-3"></p>
     </div>
 
-    <!-- 電子郵件資訊 -->
-    <div class="moyu-section-title" id="settings-email-section-title">登入信箱</div>
-    <div class="moyu-field-label" id="settings-email-label">Email</div>
-    <div class="moyu-field-box">
-      <span id="email-text">載入中...</span>
-      <span id="email-status" class="moyu-badge moyu-badge-warn">檢查中</span>
-    </div>
-    <div class="moyu-btn-row moyu-btn-row-left">
-      <button class="moyu-btn moyu-btn-secondary" id="btn-resend" style="display:none;" onclick="resendVerify()">
-        重新寄送驗證信
-      </button>
-    </div>
-
-    <!-- 暱稱設定 -->
-    <div class="moyu-section-title" id="settings-nickname-section-title">暱稱設定</div>
-    <div class="moyu-field-label" id="settings-nickname-label">
-      顯示暱稱（聊天時顯示的名字）
-    </div>
-    <input id="nickname-input" class="moyu-input" placeholder="輸入你的暱稱" />
-
-    <!-- 語言設定 -->
-    <div class="moyu-section-title" id="settings-lang-section-title">語言設定</div>
-    <div class="moyu-field-label" id="settings-lang-label">介面語言</div>
-    <select id="lang-select" class="moyu-select">
-      <option value="zh">繁體中文</option>
-      <option value="en">English</option>
-    </select>
-
-    <div class="moyu-btn-row">
-      <button class="moyu-btn moyu-btn-secondary" id="btn-back-home" onclick="goHome()">
-        回主畫面
-      </button>
-      <button class="moyu-btn moyu-btn-primary" id="btn-save-profile" onclick="saveProfile()">
-        儲存設定
-      </button>
-    </div>
-
-    <div class="moyu-btn-row moyu-btn-row-space-between">
-      <button class="moyu-btn moyu-btn-danger" id="btn-logout" onclick="logout()">
-        登出帳號
-      </button>
-    </div>
-
-    <div id="msg" class="moyu-msg"></div>
-  </div>
-
-  <!-- 邏輯全部移到 settings.js -->
-  <script type="module" src="./settings.js"></script>
-</body>
+    <!-- JS -->
+    <script type="module" src="./JS/settings.js"></script>
+  </body>
 </html>

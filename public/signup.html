@@ -2,33 +2,37 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <title>Mōyu Club - 註冊</title>
+    <title>Mōyu - 註冊</title>
 
-    <!-- 先載入 Tailwind -->
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 再載入 Moyu 全域樣式 -->
-    <link rel="stylesheet" href="/css/main.css" />
+
+    <!-- Moyu 全域樣式 -->
+    <link rel="stylesheet" href="./css/main.css" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
+
   <body class="moyu-page flex items-center justify-center">
     <div class="moyu-card w-full max-w-md">
       <!-- 標題 + 語言切換 -->
       <div class="flex items-center justify-between mb-4">
-        <div class="text-left">
+        <div>
+          <img src="./images/logo.png" class="moyu-logo2" />
+
+          <!-- <p
+            id="signup-subtitle"
+            class="moyu-subtitle"
+          >
+            
+          </p>-->
+        </div>
           <h2
             id="signup-title"
             class="text-xl font-bold text-slate-900"
           >
             Loading...
           </h2>
-          <p
-            id="signup-subtitle"
-            class="mt-1 text-xs text-slate-500"
-          >
-            ...
-          </p>
-        </div>
         <div class="flex items-center gap-1 text-[11px]">
           <button
             id="langZh"
@@ -46,13 +50,15 @@
       </div>
 
       <div class="space-y-3">
+        <!-- Email -->
         <div>
           <label
             id="signup-email-label"
             for="email"
-            class="block text-sm font-medium text-slate-700 mb-1"
-            >Email</label
+            class="block text-xs font-medium text-slate-500 mb-1"
           >
+            Email
+          </label>
           <input
             id="email"
             type="email"
@@ -62,13 +68,15 @@
           />
         </div>
 
+        <!-- Password -->
         <div>
           <label
             id="signup-pw-label"
             for="pw"
-            class="block text-sm font-medium text-slate-700 mb-1"
-            >密碼</label
+            class="block text-xs font-medium text-slate-500 mb-1"
           >
+            密碼
+          </label>
           <input
             id="pw"
             type="password"
@@ -77,13 +85,15 @@
           />
         </div>
 
+        <!-- Password again -->
         <div>
           <label
             id="signup-pw2-label"
             for="pw2"
-            class="block text-sm font-medium text-slate-700 mb-1"
-            >再次輸入密碼</label
+            class="block text-xs font-medium text-slate-500 mb-1"
           >
+            再次輸入密碼
+          </label>
           <input
             id="pw2"
             type="password"
@@ -92,18 +102,21 @@
           />
         </div>
 
+        <!-- Signup btn -->
         <button
           id="btn-signup"
-          class="mt-2 w-full moyu-btn moyu-btn-primary text-sm font-medium"
+          class="mt-2 w-full moyu-btn moyu-btn-primary text-sm font-semibold"
         >
           建立帳號並寄出驗證信
         </button>
 
+        <!-- Status -->
         <p
           id="signup-status"
-          class="mt-3 text-center text-xs text-slate-500 min-h-[1rem]"
+          class="text-center text-xs text-slate-500 min-h-[1rem] mt-2"
         ></p>
 
+        <!-- Back to login -->
         <button
           id="signup-back-login"
           class="mt-2 w-full text-xs text-slate-500 hover:underline"
@@ -113,7 +126,7 @@
       </div>
     </div>
 
-    <!-- 把邏輯全部放到 signup.js -->
-    <script type="module" src="./signup.js"></script>
+    <!-- signup 邏輯 -->
+    <script type="module" src="./js/signup.js"></script>
   </body>
 </html>

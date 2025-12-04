@@ -6,7 +6,7 @@
 
     <!-- 先載入 Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 再載入 Moyu 全域樣式（深海風格） -->
+    <!-- 再載入 Moyu 全域樣式 -->
     <link rel="stylesheet" href="/css/main.css" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,19 +17,21 @@
       <!-- 標題 + 語言切換 -->
       <div class="flex items-center justify-between mb-4">
         <div class="text-left">
-          <h2
+                    <img src="./images/logo.png" class="moyu-logo2" />
+
+          <!--<p
+            id="reset-subtitle"
+            class="moyu-subtitle"
+          >
+            ...
+          </p>-->
+        </div>
+                  <h2
             id="reset-title"
             class="text-xl font-bold text-slate-900"
           >
             Loading...
           </h2>
-          <p
-            id="reset-subtitle"
-            class="mt-1 text-xs text-slate-500"
-          >
-            ...
-          </p>
-        </div>
         <div class="flex items-center gap-1 text-[11px]">
           <button
             id="langZh"
@@ -51,7 +53,7 @@
           <label
             id="reset-email-label"
             for="reset-email"
-            class="block text-sm font-medium text-slate-700 mb-1"
+            class="block text-xs font-medium text-slate-500 mb-1"
           >
             Email
           </label>
@@ -66,7 +68,7 @@
 
         <button
           id="reset-btn"
-          class="mt-2 w-full moyu-btn moyu-btn-primary text-sm font-medium"
+          class="mt-2 w-full moyu-btn moyu-btn-primary text-sm font-semibold"
         >
           寄送重設密碼信
         </button>
@@ -86,6 +88,6 @@
     </div>
 
     <!-- JS 全部外掛到 reset.js -->
-    <script type="module" src="./reset.js"></script>
+    <script type="module" src="./JS/reset.js"></script>
   </body>
 </html>

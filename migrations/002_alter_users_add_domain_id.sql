@@ -1,0 +1,2 @@
+ALTER TABLE users
+ADD COLUMN domain_id INTEGER REFERENCES domains(id);
