@@ -12,16 +12,16 @@
     - Firebase Authentication for user login, Firestore for persistent data storage (user profiles, saved connections), Node.js and Socket.io for real-time bi-directional communication (matching and chat), and a structured client-server design utilizing modern JavaScript. The entire application is packaged to run locally to clearly showcase the complete, integrated architecture.
 
 ## Project Structure / 專案結構說明 
-| 檔案/資料夾 | 類型 | 核心功能與職責 (Core Function and Responsibility) |
+| File/Folder | Type | Core Function and Responsibility |
 | :--- | :--- | :--- |
-| **`server.js`** | 後端 (Node.js) | 伺服器入口。負責啟動 HTTP 服務、服務靜態檔案，並管理 **Socket.io 實例**。核心職責是維護**記憶體中的配對池**、執行配對邏輯，以及在配對成功後轉發即時聊天訊息。 |
-| **`public/`** | 資料夾 | 存放所有前端靜態資源，包括 HTML 頁面、CSS 樣式表 (`main.css`) 和圖片等。所有用戶介面 (UI) 均由此資料夾提供服務。 |
-| **`public/client.js`** | 前端 (JS) | **客戶端主邏輯。** 負責監聽 Firebase 狀態、處理所有 **Socket.io 事件**（連線、發送/接收訊息、配對成功通知）、以及與 **Firestore** 進行數據互動（保留連線記錄）。 |
-| **`public/signup.js`** | 前端 (JS) | 註冊邏輯。包含 **`classifyDomainFromEmail` 函式**，用於解析用戶信箱網域並將 `domainType` 寫入 Firestore，以實現**網域分級機制**。 |
-| **`public/home.js`** | 前端 (JS) | `home.html` 頁面專屬邏輯。負責登入後 UI 的渲染，特別是根據用戶的 `domainType` 來設定**暱稱外框的顏色樣式**，以視覺化呈現用戶的驗證狀態。 |
-| **`public/i18n.js`** | 前端 (JS) | **國際化 (i18n) 模組。** 包含所有中英文介面文本的翻譯字典，並提供統一的 API 供前端其他模組進行語言切換。 |
-| **`public/firebase.js`** | 前端 (JS) | Firebase 初始化配置。負責初始化 Firebase App 並匯出 `auth` (身份驗證) 和 `db` (Firestore 資料庫) 實例。 |
-| **其他 HTML 頁面** | 前端 (HTML) | `login.html`、`reset.html`、`nickname.html`、`verify.html` 等。處理所有帳戶管理流程和介面導航。 |
+| **`server.js`** | Backend (Node.js) | Server entry point. Manages the **Socket.io instance**, maintains the **in-memory matching pool**, executes matching logic, and forwards real-time chat messages. |
+| **`public/`** | Folder | Contains all frontend static assets, including HTML pages, CSS (`main.css`), and images. All User Interface (UI) is served from this directory. |
+| **`public/client.js`** | Frontend (JS) | **Core client-side logic.** Handles Firebase Auth state, all **Socket.io events** (connecting, sending/receiving messages, matching notifications), and data interaction with **Firestore** (saving connections). |
+| **`public/signup.js`** | Frontend (JS) | Sign-up logic. Includes the **`classifyDomainFromEmail` function** to parse user email domains and write the `domainType` to Firestore, implementing the **domain classification mechanism**. |
+| **`public/home.js`** | Frontend (JS) | Specific logic for `home.html`. Handles UI rendering after login, particularly applying the correct **nickname border color style** based on the user's `domainType` for visual verification status. |
+| **`public/i18n.js`** | Frontend (JS) | **Internationalization (i18n) module.** Contains translation dictionaries for interface texts and provides an API for language switching. |
+| **`public/firebase.js`** | Frontend (JS) | Firebase initialization configuration. Initializes the Firebase App and exports `auth` (authentication) and `db` (Firestore database) instances. |
+| **Other HTML Pages** | Frontend (HTML) | `login.html`, `reset.html`, `nickname.html`, `verify.html`, etc. Handles all account management flows and interface navigation. |
 
 ---
 
